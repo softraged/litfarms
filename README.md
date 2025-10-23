@@ -7,22 +7,26 @@ A dynamic, real-time product listing web application for LitFarms THCA products.
 ## Features
 
 ### Product Display
+- **New theme and updated design (With light/dark mode switch)**
 - Real-time product updates
 - Responsive grid layout
 - Beautiful product cards with dynamic images
 - Detailed pricing by tier and weight
 - Stock status indicators with "In Stock" and "Out of Stock" badges
 - Add to Cart functionality for in-stock items
+- **Fixed product COA buttons not displaying correctly sometimes**
 
 ### Advanced Filtering
 - Search products by name
 - Filter by tier (Essential, Preferred, Supreme)
+- **Tiers now are programmatically determined (So if a new tier is created by LIT, they should show up without needing to update the code)**
 - Filter by strain type (Sativa, Indica, Hybrid)
 - Filter by weight (28g, 3.5g, 7g)
+- **Search, weight, image, and sort-by algorithms are a little more precise**
 - Sort by:
-  - Name (A-Z, Z-A)
-  - Date (Newest, Oldest)
-  - Price (Low to High, High to Low)
+  - Name (A-Z, Z-A)
+  - Date (Newest, Oldest)
+  - Price (Low to High, High to Low)
 - Toggle between in-stock items and all items
 - Persistent filter settings across sessions
 
@@ -30,27 +34,28 @@ A dynamic, real-time product listing web application for LitFarms THCA products.
 - Real-time product monitoring
 - Customizable update frequency
 - Smart notification filtering:
-  - Multi-select tier filtering (Essential, Preferred, Supreme)
-  - Multi-select weight filtering (28g, 3.5g, 7g)
-  - Specific product tracking
+  - Multi-select tier filtering (Essential, Preferred, Supreme)
+  - Multi-select weight filtering (28g, 3.5g, 7g)
+  - Specific product tracking
 - Notification types:
-  - New products
-  - Stock changes (including price updates)
-  - Product removals
-  - New variant additions
+  - New products
+  - Stock changes (including price updates)
+  - Product removals
+  - New variant additions
 - Detailed notifications including:
-  - Price changes
-  - Stock status changes
-  - New variant introductions
-  - Product removals
+  - Price changes
+  - Stock status changes
+  - New variant introductions
+  - Product removals
 - Multiple notification methods:
-  - Mobile app notifications via Ntfy
-  - Email notifications
+  - **New in-browser notification system (Ntfy notifications not changed)**
+  - Mobile app notifications via Ntfy
+  - Email notifications
 - Granular notification settings:
-  - Select specific products to monitor
-  - Filter by product tiers
-  - Filter by product weights
-  - Choose notification types (new/stock/removed)
+  - Select specific products to monitor
+  - Filter by product tiers
+  - Filter by product weights
+  - Choose notification types (new/stock/removed)
 
 ## Setup
 
@@ -64,15 +69,15 @@ A dynamic, real-time product listing web application for LitFarms THCA products.
 
 #### Mobile App Notifications
 1. Download the Ntfy app:
-   - [iOS App Store](https://apps.apple.com/us/app/ntfy/id1625396347)
-   - [Google Play Store](https://play.google.com/store/apps/details?id=io.heckel.ntfy)
+   - [iOS App Store](https://apps.apple.com/us/app/ntfy/id1625396347)
+   - [Google Play Store](https://play.google.com/store/apps/details?id=io.heckel.ntfy)
 2. Click the settings gear icon in the bottom right
 3. Enable "App Notifications"
 4. Generate a unique topic name or enter your own
 5. In the Ntfy app:
-   - Tap "Add subscription"
-   - Enter your topic name exactly as shown in the settings
-   - Save the subscription
+   - Tap "Add subscription"
+   - Enter your topic name exactly as shown in the settings
+   - Save the subscription
 
 #### Email Notifications
 1. Click the settings gear icon
@@ -85,13 +90,13 @@ A dynamic, real-time product listing web application for LitFarms THCA products.
 2. Select desired tiers (Essential, Preferred, Supreme, or All)
 3. Select desired weights (28g, 3.5g, 7g, or All)
 4. Choose notification types:
-   - New products
-   - Stock changes
-   - Removed products
+   - New products
+   - Stock changes
+   - Removed products
 5. Optionally select specific products to track:
-   - Use the search box to find products
-   - Check/uncheck products to monitor
-   - Use "Deselect All" to clear selections
+   - Use the search box to find products
+   - Check/uncheck products to monitor
+   - Use "Deselect All" to clear selections
 
 ## Technical Details
 
