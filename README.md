@@ -7,22 +7,22 @@ A dynamic, real-time product listing web application for LitFarms THCA products.
 ## Features
 
 ### Product Display
-- **New theme and updated design (With light/dark mode switch)**
+- New theme and updated design (With light/dark mode switch)
 - Real-time product updates
 - Responsive grid layout
 - Beautiful product cards with dynamic images
 - Detailed pricing by tier and weight
 - Stock status indicators with "In Stock" and "Out of Stock" badges
 - Add to Cart functionality for in-stock items
-- **Fixed product COA buttons not displaying correctly sometimes**
+- Fixed product COA buttons not displaying correctly sometimes
 
 ### Advanced Filtering
 - Search products by name
 - Filter by tier (Essential, Preferred, Supreme)
-- **Tiers now are programmatically determined (So if a new tier is created by LIT, they should show up without needing to update the code)**
+- Tiers now are programmatically determined (So if a new tier is created by LIT, they should show up without needing to update the code)
 - Filter by strain type (Sativa, Indica, Hybrid)
-- Filter by weight (28g, 3.5g, 7g)
-- **Search, weight, image, and sort-by algorithms are a little more precise**
+- **Programmatic weight filtering** (All available weights are dynamically loaded)
+- Search, weight, image, and sort-by algorithms are a little more precise
 - Sort by:
   - Name (A-Z, Z-A)
   - Date (Newest, Oldest)
@@ -35,7 +35,7 @@ A dynamic, real-time product listing web application for LitFarms THCA products.
 - Customizable update frequency
 - Smart notification filtering:
   - Multi-select tier filtering (Essential, Preferred, Supreme)
-  - Multi-select weight filtering (28g, 3.5g, 7g)
+  - **Multi-select weight filtering** (All available weights are dynamically loaded)
   - Specific product tracking
 - Notification types:
   - New products
@@ -48,7 +48,7 @@ A dynamic, real-time product listing web application for LitFarms THCA products.
   - New variant introductions
   - Product removals
 - Multiple notification methods:
-  - **New in-browser notification system (Ntfy notifications not changed)**
+  - New in-browser notification system (Ntfy notifications not changed)
   - Mobile app notifications via Ntfy
   - Email notifications
 - Granular notification settings:
@@ -88,7 +88,7 @@ A dynamic, real-time product listing web application for LitFarms THCA products.
 ### Customizing Notifications
 1. Open settings (gear icon)
 2. Select desired tiers (Essential, Preferred, Supreme, or All)
-3. Select desired weights (28g, 3.5g, 7g, or All)
+3. Select desired weights (All available weights are dynamically loaded)
 4. Choose notification types:
    - New products
    - Stock changes
