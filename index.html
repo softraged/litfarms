@@ -395,7 +395,7 @@
       
       try {
         // Fetch first page
-        const response = await fetch(`${shopifyStoreUrl}?page=1&limit=1250`);
+        const response = await fetch(`${shopifyStoreUrl}?page=1&limit=250`);
         const data = await response.json();
         
         if (data.products && data.products.length > 0) {
@@ -403,13 +403,13 @@
           console.log(`Found ${data.products.length} products on page 1`);
           
           // Only continue fetching if we got the maximum number of products (250)
-          if (data.products.length > 1250) {
+          if (data.products.length >= 250) {
             let page = 2;
             let hasMore = true;
             
             while (hasMore) {
               try {
-                const nextResponse = await fetch(`${shopifyStoreUrl}?page=${page}&limit=1250`);
+                const nextResponse = await fetch(`${shopifyStoreUrl}?page=${page}&limit=250`);
                 const nextData = await nextResponse.json();
                 
                 if (nextData.products && nextData.products.length > 0) {
@@ -1305,7 +1305,7 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
           if (changes.new.length > 0 || changes.stockChanged.length > 0 || changes.removed.length > 0) {
             console.log('Changes detected, updating state and sending notifications...');
             await handleNotifications(changes);
-			window.showNotification("Changes detected, updating state and sending notifications...", 60000);
+			window.showNotification(`${changes.new.length} total changes, ${changes.stockChanged.length} stock changed, ${changes.removed.length} stock removed`, 60000);
             products = freshProducts;
             lastProducts = freshProducts;
             filterProducts();
@@ -1588,8 +1588,13 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
             filterProducts();
             // Then check for updates in the background
             try {
-				console.log('lol');
-              const updatedProducts = await getProducts(false);
+				const updatedProducts = await getProducts(false);
+              if (JSON.stringify(products) !== JSON.stringify(updatedProducts)) {
+                console.log('Products updated, refreshing display');
+                products = updatedProducts;
+                filterProducts();
+              }
+              //const updatedProducts = await getProducts(false);
 			  //const changes = detectProductChanges(products, updatedProducts);
 			  let variantsInStockNum = 0;
 				products.forEach(product => {
