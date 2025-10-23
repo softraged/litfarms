@@ -4,25 +4,43 @@
 
 A dynamic, real-time product listing web application for LitFarms THCA products. This application provides a modern, responsive interface for viewing and monitoring product availability with advanced filtering and notification capabilities.
 
+
+---
+
+## 2.0 Changes and Enhancements
+
+This section details the significant updates introduced in the latest version.
+
+### Design and UX Updates
+- **New Theme and Design:** Includes a refreshed aesthetic for a better user experience.
+- **Light/Dark Mode Switch:** Added to allow users to customize the interface theme.
+- **COA Button Fix:** Corrected an issue where product COA (Certificate of Analysis) buttons were sometimes not displaying correctly.
+
+### Filtering and Data Logic
+- **Programmatic Tiers:** Tiers are now **programmatically determined** from the product data. This means any new tier created by LitFarms will automatically appear in the filters without requiring a code update.
+- **Improved Algorithms:** The search, weight, image selection, and sort-by algorithms have been refined for **greater precision** and reliability.
+- **Programmatic Weight Filtering:** Weight filtering is now dynamic, automatically listing all available weights rather than being fixed (replaces the hardcoded 28g, 3.5g, 7g filters).
+
+### Notification System
+- **New In-Browser Notifications:** A real-time, visible notification system has been added directly to the application interface. (Existing Ntfy mobile app notifications and email notifications remain unchanged).
+
+---
+
 ## Features
 
 ### Product Display
-- New theme and updated design (With light/dark mode switch)
 - Real-time product updates
 - Responsive grid layout
 - Beautiful product cards with dynamic images
 - Detailed pricing by tier and weight
 - Stock status indicators with "In Stock" and "Out of Stock" badges
 - Add to Cart functionality for in-stock items
-- Fixed product COA buttons not displaying correctly sometimes
 
 ### Advanced Filtering
 - Search products by name
 - Filter by tier (Essential, Preferred, Supreme)
-- Tiers now are programmatically determined (So if a new tier is created by LIT, they should show up without needing to update the code)
 - Filter by strain type (Sativa, Indica, Hybrid)
-- **Programmatic weight filtering** (All available weights are dynamically loaded)
-- Search, weight, image, and sort-by algorithms are a little more precise
+- Filter by weight (28g, 3.5g, 7g)
 - Sort by:
   - Name (A-Z, Z-A)
   - Date (Newest, Oldest)
@@ -35,7 +53,7 @@ A dynamic, real-time product listing web application for LitFarms THCA products.
 - Customizable update frequency
 - Smart notification filtering:
   - Multi-select tier filtering (Essential, Preferred, Supreme)
-  - **Multi-select weight filtering** (All available weights are dynamically loaded)
+  - Multi-select weight filtering (28g, 3.5g, 7g)
   - Specific product tracking
 - Notification types:
   - New products
@@ -48,7 +66,6 @@ A dynamic, real-time product listing web application for LitFarms THCA products.
   - New variant introductions
   - Product removals
 - Multiple notification methods:
-  - New in-browser notification system (Ntfy notifications not changed)
   - Mobile app notifications via Ntfy
   - Email notifications
 - Granular notification settings:
@@ -56,6 +73,8 @@ A dynamic, real-time product listing web application for LitFarms THCA products.
   - Filter by product tiers
   - Filter by product weights
   - Choose notification types (new/stock/removed)
+
+---
 
 ## Setup
 
@@ -88,7 +107,7 @@ A dynamic, real-time product listing web application for LitFarms THCA products.
 ### Customizing Notifications
 1. Open settings (gear icon)
 2. Select desired tiers (Essential, Preferred, Supreme, or All)
-3. Select desired weights (All available weights are dynamically loaded)
+3. Select desired weights (Dynamically loaded weights, or All)
 4. Choose notification types:
    - New products
    - Stock changes
@@ -97,7 +116,7 @@ A dynamic, real-time product listing web application for LitFarms THCA products.
    - Use the search box to find products
    - Check/uncheck products to monitor
    - Use "Deselect All" to clear selections
-
+---
 ## Technical Details
 
 - Pure HTML/CSS/JavaScript implementation
@@ -107,7 +126,7 @@ A dynamic, real-time product listing web application for LitFarms THCA products.
 - Real-time product monitoring
 - Virtual cart system
 - Smart caching system for improved performance
-
+---
 ## Browser Compatibility
 
 The application is compatible with all modern browsers:
@@ -116,14 +135,14 @@ The application is compatible with all modern browsers:
 - Safari
 - Edge
 - Mobile browsers
-
+---
 ## Privacy
 
 - No user data is collected
 - All settings are stored locally in your browser
 - Notifications are sent through encrypted channels
 - Email addresses are only used for notifications
-
+---
 ## Contributing
 
 Feel free to submit issues and enhancement requests!
