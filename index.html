@@ -10,25 +10,27 @@
   <style>
   
   </style>
-  <div class="countdown-container">
-    <div class="countdown-tooltip">Next check in: <span class="tooltip-time">5:00</span></div>
-    <div class="countdown-circle">
-      <svg viewBox="0 0 36 36">
-        <circle class="progress-bg" r="16" cx="18" cy="18"></circle>
-        <circle class="progress" r="16" cx="18" cy="18" stroke-dasharray="100.53" stroke-dashoffset="0"></circle>
-      </svg>
-      <div class="countdown-time">5:00</div>
-    </div>
-  </div>
+  
 </head>
 <body>
   <div id="site-status" class="site-status">
     <span id="status-message"></span>
     <button id="retry-button" class="retry-button" style="display: none;">Retry Now</button>
   </div>
+  
+
+  <div class="filters-container" id="filters-container" style="width:75%; margin: 0 auto;">
+  <button id="filter-toggle-button" aria-expanded="true" aria-controls="filters-content">
+        Hide Filters
+        <svg id="filter-toggle-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+    </button>
+  <div id="filterstohide">
   <div class="header">
-    <a href="https://www.litfarms.com" class="header-link">
-      <svg width="75" height="75" viewBox="0 0 117.04084 64.042396" version="1.1" id="svg1" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+  
+    <a href="https://www.litfarms.com" class="header-link" style="margin-left: auto;margin-right: 3px; margin-bottom:3px;">
+      <svg width="65" height="65" viewBox="0 0 117.04084 64.042396" version="1.1" id="svg1" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
         <defs id="defs1"></defs>
         <g id="layer1" transform="translate(-46.479583,-116.4788)">
           <rect style="display:inline;opacity:1;fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:6;stroke-dasharray:none;stroke-opacity:1" id="rect2" width="111.04084" height="58.0424" x="49.47958" y="119.4788"></rect>
@@ -44,11 +46,16 @@
         </g>
       </svg>
     </a>
-    <a href="https://www.litfarms.com" class="header-link">
-      <h1>Farms Products</h1>
+    <a href="https://www.litfarms.com" class="header-link" style="margin: 0px 0; margin-left: -10px; margin-top:5px;">
+      <h1 >Farms Products</h1>
     </a>
+	<hr>
+	   <div id="product-count" style="margin: 0px 0;margin-left: auto;margin-right: 20px;">
+      Showing 0 products
+    </div>
+	<div id="countdown-label" style="text-align:center;margin: 0px 0;margin-left: auto;margin-right: auto;"><strong class="countdown-time">5:00</strong> Stock Refresh Timer</div>
+  
   </div>
-  <div class="filters-container">
     <div class="filters">
       <div class="search-container">
         <input type="text" id="product-search-filter" class="search-input" placeholder="Search products...">
@@ -67,11 +74,18 @@
         <option value="hybrid">Hybrid</option>
         <option value="unknown">Unknown</option>
       </select>
-      <select id="weight-filter">
+      <!---<select id="weight-filter">
         <option value="all">All Weights</option>
         <option value="28g">28g</option>
+        <option value="28g (Smalls)">28g (Smalls)</option>
         <option value="3.5g">3.5g</option>
-      </select>
+      </select>--->
+	  <div id="weight-filter-container" class="filter-group filter-dropdown-container">
+    <button id="weight-dropdown-toggle" class="dropdown-toggle" aria-expanded="false">
+        Weight
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="toggle-icon"><polyline points="6 9 12 15 18 9"></polyline></svg>
+    </button>
+</div>
       <select id="sort-filter">
         <option value="alpha-asc">A-Z</option>
         <option value="alpha-desc">Z-A</option>
@@ -82,10 +96,16 @@
       </select>
       <button id="stock-filter" class="stock-filter-btn active">Show All</button>
     </div>
-    <div id="product-count" style="text-align: center; margin: 8px 0; color: #03dac6;">
-      Showing 0 products
+ <!--<div class="countdown-container" style=" ">
+    <div class="countdown-circle" style="margin: 0 auto;">
+	
+      <div class="countdown-time">5:00</div>
     </div>
+  </div>-->
+     </div>
   </div>
+  
+  
   <div class="product-grid" id="product-grid">
     <!-- Product cards will be dynamically inserted here -->
   </div>
@@ -271,6 +291,7 @@
         return strainInfo.category.toLowerCase();
       }
       
+      //console.log('is an unknown');
       return 'unknown';
     }
 
@@ -313,11 +334,11 @@
             
             // If this is an immediate request, return cached data regardless of age
             if (immediate) {
-              return filterTHCAProducts(parsedCache);
+              return parsedCache;
             }
             
             // For background updates, check if cache is fresh enough
-            if (now - parseInt(lastUpdate) < CACHE_DURATION) {
+            if (now - parseInt(lastUpdate) < CACHE_DURATION && immediate) {
               return filterTHCAProducts(parsedCache);
             }
           }
@@ -335,6 +356,8 @@
         localStorage.removeItem('lastFetchError');
 
         const thcaProducts = filterTHCAProducts(freshProducts);
+		//thcaProducts = thcaProducts;
+       // const otherProducts = filterOtherProducts(freshProducts);
         
         if (thcaProducts.length > 0) {
           localStorage.setItem(CACHE_KEY, JSON.stringify(thcaProducts));
@@ -372,7 +395,7 @@
       
       try {
         // Fetch first page
-        const response = await fetch(`${shopifyStoreUrl}?page=1&limit=250`);
+        const response = await fetch(`${shopifyStoreUrl}?page=1&limit=1250`);
         const data = await response.json();
         
         if (data.products && data.products.length > 0) {
@@ -380,13 +403,13 @@
           console.log(`Found ${data.products.length} products on page 1`);
           
           // Only continue fetching if we got the maximum number of products (250)
-          if (data.products.length === 250) {
+          if (data.products.length > 1250) {
             let page = 2;
             let hasMore = true;
             
             while (hasMore) {
               try {
-                const nextResponse = await fetch(`${shopifyStoreUrl}?page=${page}&limit=250`);
+                const nextResponse = await fetch(`${shopifyStoreUrl}?page=${page}&limit=1250`);
                 const nextData = await nextResponse.json();
                 
                 if (nextData.products && nextData.products.length > 0) {
@@ -418,14 +441,14 @@
 
     function renderProducts(filteredProducts) {
       const productGrid = domElements.productGrid;
-      domElements.productCount.textContent = `Showing ${filteredProducts.length} products`;
+      domElements.productCount.innerHTML = `<strong>${filteredProducts.length}</strong> Products Shown`;
 
       // First, mark existing cards for fade out
       const existingCards = productGrid.querySelectorAll('.product-card');
       existingCards.forEach(card => card.classList.add('fade-out'));
 
       // Wait for fade out animation
-      setTimeout(() => {
+      //setTimeout(() => {
         // Clear the grid but maintain the few-items class if it should stay
         const shouldHaveFewItems = filteredProducts.length < 4;
         const hadFewItems = productGrid.classList.contains('few-items');
@@ -443,7 +466,7 @@
 
         // Calculate initial load count
         const productWidth = 250;
-        const gap = 20;
+        const gap = 10;
         const containerWidth = productGrid.offsetWidth;
         const productsPerRow = Math.floor(containerWidth / (productWidth + gap));
         const initialLoadCount = productsPerRow * 2;
@@ -453,7 +476,7 @@
           products.slice(startIndex, endIndex).forEach((product, index) => {
             const productCard = document.createElement('div');
             productCard.className = 'product-card';
-            productCard.style.animationDelay = `${index * 50}ms`; // Stagger the animations
+            productCard.style.animationDelay = `${index * 75}ms`; // Stagger the animations
             
             // Get filtered variants based on current filters
             const processedVariants = utils.processVariants(product);
@@ -462,9 +485,14 @@
             if (domElements.strainFilter.value !== 'all') {
               relevantVariants = relevantVariants.filter(v => v.correctedTier === domElements.strainFilter.value);
             }
-            if (domElements.weightFilter.value !== 'all') {
-              relevantVariants = relevantVariants.filter(v => v.correctedWeight === domElements.weightFilter.value);
-            }
+			
+			//if (selectedWeights.length >= 2) {
+			//  relevantVariants = relevantVariants.filter(v => v.correctedTier === domElements.strainFilter.value);
+			//}
+              
+			relevantVariants = relevantVariants.filter(v => selectedWeights.includes(v.correctedWeight) );
+			
+            
             if (!domElements.stockFilter.classList.contains('active')) {
               relevantVariants = relevantVariants.filter(v => v.available);
             }
@@ -496,7 +524,7 @@
             const productTitle = createProductTitle(product);
             productCard.appendChild(productTitle);
 
-            const priceContainer = createPriceContainer(product, relevantVariants, domElements.strainFilter.value, domElements.weightFilter.value, domElements.stockFilter.classList.contains('active'));
+            const priceContainer = createPriceContainer(product, relevantVariants, domElements.strainFilter.value, domElements.stockFilter.classList.contains('active'));
             productCard.appendChild(priceContainer);
 
             const productDescription = createProductDescription(product);
@@ -511,11 +539,11 @@
 
         // Render the rest after a short delay
         if (filteredProducts.length > initialLoadCount) {
-          setTimeout(() => {
+          //setTimeout(() => {
             renderBatch(filteredProducts, initialLoadCount, filteredProducts.length);
-          }, 300); // Wait for initial batch animations to complete
+          //}, 50); // Wait for initial batch animations to complete
         }
-      }, 200); // Match this with the fade-out transition duration
+      //}, 10); // Match this with the fade-out transition duration
     }
 
     // Helper functions for rendering
@@ -527,7 +555,7 @@
       switch(strainType) {
         case 'sativa':
           badge.style.backgroundColor = 'var(--strain-sativa)';
-          badge.style.color = '#000';
+          badge.style.color = '#fff';
           break;
         case 'indica':
           badge.style.backgroundColor = 'var(--strain-indica)';
@@ -563,27 +591,41 @@
       // Filter images based on variants
       let filteredImages = [];
       if (product.images && product.images.length > 0) {
-        if (relevantVariants.length === product.variants.length) {
+        //if (relevantVariants.length === product.variants.length) {
           // Show all images if all variants are selected
-          filteredImages = [product.images[0]]; // Just use first image
-        } else {
+		//  console.log('using the all image variant alg');
+        //  filteredImages = [product.images[0]]; // Just use first image
+        //} else {
           // Get set of relevant variant IDs
           const relevantVariantIds = new Set(relevantVariants.map(v => v.id));
-          
+          const relevantVariantAvailable = new Set(relevantVariants.map(v => v.available));
+		  const availableImgLink = product.images.find(variant => 
+            relevantVariantIds.has(variant.id)
+          );
+		 // filteredImages = [availableImgLink.featured_image];
+          //console.info('avail:' + availableImgLink.featured_image.src);
           // Try to find first image that matches a variant
           const variantImage = product.images.find(img => 
             img.variant_ids && 
-            img.variant_ids.some(id => relevantVariantIds.has(id))
+            img.variant_ids.some(id => relevantVariantIds.has(id)) &&
+			relevantVariants.some(variant => {/*console.log('log: ' + variant.available);*/ return variant.available;} ) === true
           );
-          
+		  const cleanTitle = product.title
+			.replace(/\s*-?\s*THCA\s+Flower\s*$/i, '')
+			.replace(/\s*-?\s*Flower\s*$/i, '')
+			.replace(/\s*-?\s*\d+\.?\d*g\s*$/i, '')
+			.replace(/-/g, '')
+			.replace(' ', '\n')
+			.trim();
+		  if(variantImage)
+			filteredImages = [variantImage];
+		  else
+			filteredImages = [{ src: `https://placehold.co/300x300/${window.getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').replace('#','')}/${window.getComputedStyle(document.documentElement).getPropertyValue('--accent-primary').replace('#','')}?text=${encodeURIComponent(cleanTitle)}` }];
+		  //console.log(variantImage[0].src);
           // Use variant image if found, otherwise use first product image
-          filteredImages = [variantImage || product.images[0]];
-        }
-      }
-
-      // Use placeholder if no images available
-      if (filteredImages.length === 0) {
-        filteredImages = [{ src: 'https://via.placeholder.com/300' }];
+          //filteredImages = [variantImage || product.images[0]];
+		  
+        //}
       }
 
       // Set the image source
@@ -602,110 +644,9 @@
       return title;
     }
 
-    function createPriceContainer(product, variants, strainFilter, weightFilter, stockFilter) {
-      const container = document.createElement('div');
-      container.className = 'price-container';
-
-      // Group variants by tier
-      const variantsByTier = {};
-      TIERS.forEach(tier => {
-        variantsByTier[tier] = [];
-      });
-
-      variants.forEach(variant => {
-        if (variant.correctedTier && variant.correctedWeight) {
-          variantsByTier[variant.correctedTier].push(variant);
-        }
-      });
-
-      // Create sections for each tier
-      TIERS.forEach(tier => {
-        if (strainFilter !== 'all' && tier !== strainFilter) {
-          return;
-        }
-
-        const tierVariants = variantsByTier[tier];
-        if (tierVariants && tierVariants.length > 0) {
-          const filteredVariants = tierVariants.filter(variant => {
-            if (weightFilter !== 'all' && variant.correctedWeight !== weightFilter) {
-              return false;
-            }
-            if (!stockFilter && !variant.available) {
-              return false;
-            }
-            return true;
-          });
-
-          if (filteredVariants.length > 0) {
-            const section = document.createElement('div');
-            section.className = `variant-section variant-section-${tier.toLowerCase()}`;
-
-            const title = document.createElement('div');
-            title.className = `variant-title variant-title-${tier.toLowerCase()}`;
-            title.textContent = tier;
-            section.appendChild(title);
-
-            const weights = document.createElement('div');
-            weights.className = 'variant-weights';
-
-            filteredVariants.forEach(variant => {
-              const row = document.createElement('div');
-              row.className = variant.available ? 'weight-row in-stock' : 'weight-row out-of-stock';
-              
-              // Add click handler to stop event propagation
-              row.addEventListener('click', (e) => {
-                e.stopPropagation();
-              });
-
-              const infoRow = document.createElement('div');
-              infoRow.className = 'weight-info-row';
-
-              const info = document.createElement('div');
-              info.className = 'weight-info';
-
-              const label = document.createElement('span');
-              label.className = 'weight-label';
-              label.textContent = variant.correctedWeight;
-
-              const price = document.createElement('span');
-              price.className = 'weight-price';
-              price.textContent = `$${variant.price}`;
-
-              info.appendChild(label);
-              info.appendChild(price);
-              infoRow.appendChild(info);
-
-              const stockBadge = document.createElement('span');
-              stockBadge.className = `stock-badge ${variant.available ? 'in-stock-badge' : 'out-of-stock-badge'}`;
-              stockBadge.textContent = variant.available ? 'In Stock' : 'Out of Stock';
-
-              row.appendChild(infoRow);
-              row.appendChild(stockBadge);
-
-              if (variant.available) {
-                const addButton = document.createElement('button');
-                addButton.className = 'add-to-cart-button';
-                addButton.textContent = 'Add to Cart';
-                addButton.onclick = (e) => {
-                  e.stopPropagation();
-                  virtualCart.addItem(product, variant);
-                };
-                row.appendChild(addButton);
-              }
-
-              weights.appendChild(row);
-            });
-
-            section.appendChild(weights);
-            container.appendChild(section);
-          }
-        }
-      });
-
-      return container;
-    }
 
     function createProductDescription(product) {
+		try {
       const description = document.createElement('p');
       description.className = 'product-description';
       
@@ -716,7 +657,7 @@
         // Find any link that contains the text "Click here for product COA"
         const links = temp.getElementsByTagName('a');
         for (const link of links) {
-          if (link.textContent.toLowerCase().includes('click here for product coa')) {
+          if (link.textContent.toLowerCase().includes('click here for product coa') || link.textContent.toLowerCase().includes('click here to see product coa')) {
             link.className = 'coa-button';
             link.textContent = 'View COA';
             link.target = '_blank';
@@ -762,23 +703,33 @@
       const leaflyData = strainData[cleanStrainName];
       description.innerHTML = leaflyData?.description || 'No description available.';
       return description;
+	  } catch (error) {
+		 console.error('Error creating product description', ':', error);
+	  }
     }
 
+ let selectedWeights = Array.from(document.querySelectorAll('#weight-checkbox-list input[type="checkbox"]:checked'))
+        .map(cb => cb.value)
+        .filter(value => value !== 'all'); // Exclude 'all' if you added that option
     // Update filter function
     function filterProducts() {
+		selectedWeights = Array.from(document.querySelectorAll('#weight-checkbox-list input[type="checkbox"]:checked'))
+			.map(cb => cb.value); 
       const strainFilter = domElements.strainFilter.value;
       const strainTypeFilter = domElements.strainTypeFilter.value;
-      const weightFilter = domElements.weightFilter.value;
+      //const weightFilter = domElements.weightFilter.value;
+			//console.log('\nWeight Filter: ' + weightFilter);
+	  
       const stockFilter = domElements.stockFilter.classList.contains('active');
       const searchQuery = domElements.searchInput.value.toLowerCase().trim();
       const sortFilter = domElements.sortFilter.value;
-
       const filteredProducts = products.filter((product) => {
         // Check search query first
+		//console.log(searchQuery);
         if (searchQuery && !product.title.toLowerCase().includes(searchQuery)) {
           return false;
         }
-
+			
         // Process variants with utility function
         const correctedVariants = utils.processVariants(product);
 
@@ -786,23 +737,21 @@
         if (correctedVariants.length === 0) {
           return false;
         }
-
-        // Check if any variant matches the weight filter AND has a valid price
-        if (weightFilter !== 'all') {
+		let itemsfound = 0;
+		 if (selectedWeights) {
           const validWeightVariants = correctedVariants.filter(v => 
-            v.correctedWeight === weightFilter && 
-            v.hasPrice
+             selectedWeights.includes(v.correctedWeight) && 
+			 v.hasPrice
           );
           if (validWeightVariants.length === 0) {
             return false;
           }
         }
-
+		
         // Check if any variant matches the strain filter
         if (strainFilter !== 'all') {
           const validStrainVariants = correctedVariants.filter(v => 
-            v.correctedTier === strainFilter && 
-            (weightFilter === 'all' || v.correctedWeight === weightFilter) &&
+            v.correctedTier === strainFilter &&
             v.hasPrice
           );
           if (validStrainVariants.length === 0) {
@@ -821,12 +770,14 @@
         // Check stock status
         if (!stockFilter) {
           let stockCheckVariants = correctedVariants;
-          if (weightFilter !== 'all') {
-            stockCheckVariants = stockCheckVariants.filter(v => 
-              v.correctedWeight === weightFilter && 
-              v.hasPrice
-            );
-          }
+          //if (selectedWeights.length < 2) {
+		 if (selectedWeights) {
+          stockCheckVariants = stockCheckVariants.filter(v => 
+             selectedWeights.includes(v.correctedWeight) && 
+			 v.hasPrice
+          );
+        }
+          //}
           if (strainFilter !== 'all') {
             stockCheckVariants = stockCheckVariants.filter(v => v.correctedTier === strainFilter);
           }
@@ -841,25 +792,47 @@
       });
 
       // Sort the filtered products
-      const sortedProducts = utils.sortProducts(filteredProducts, sortFilter, strainFilter, weightFilter);
-      
+	  //alert(sortFilter);
+      const sortedProducts = utils.sortProducts(filteredProducts, sortFilter, strainFilter);
       // Render the sorted products
       renderProducts(sortedProducts);
     }
 
     // Functions to handle filter state persistence
     function saveFilterState() {
+		let tempcheckboxes = [];
+		const checkboxes = document.querySelectorAll('input.weight-checkbox[type="checkbox"]');
+		checkboxes.forEach(function(checkbox) {
+			tempcheckboxes.push(checkbox.checked);
+		});
+		//console.info(tempcheckboxes);
       const filterState = {
         strainFilter: document.getElementById('strain-filter').value,
         strainTypeFilter: document.getElementById('strain-type-filter').value,
-        weightFilter: document.getElementById('weight-filter').value,
+        //weightFilter: document.getElementById('weight-filter').value,
+        weightCheckboxList: tempcheckboxes,
+        weightCheckboxListSelectedOptions: document.getElementsByClassName('weight-checkbox').value,
         sortFilter: document.getElementById('sort-filter').value,
         stockFilter: document.getElementById('stock-filter').classList.contains('active')
       };
       localStorage.setItem('litFarmsFilterState', JSON.stringify(filterState));
     }
 
+    // 4. Update the Toggle Button text... (Logic remains the same)
+    function updateWeightToggleText() {
+		const weightList = document.getElementById('weight-checkbox-list');
+		const toggleButton = document.getElementById('weight-dropdown-toggle');
+        const selectedCount = weightList.querySelectorAll('input[type="checkbox"]:checked').length;
+        if (selectedCount > 0) {
+            toggleButton.firstChild.textContent = `Weight (${selectedCount})`;
+        } else {
+            toggleButton.firstChild.textContent = 'Weight';
+        }
+    }
     function loadFilterState() {
+		
+	  //Populate Weight Filter checkboxes
+	  //populateWeightCheckboxes(WEIGHTS);
       const savedState = localStorage.getItem('litFarmsFilterState');
       if (savedState) {
         const filterState = JSON.parse(savedState);
@@ -868,7 +841,7 @@
         const selects = {
           'strain-filter': filterState.strainFilter,
           'strain-type-filter': filterState.strainTypeFilter,
-          'weight-filter': filterState.weightFilter,
+          //'weight-filter': filterState.weightFilter,
           'sort-filter': filterState.sortFilter
         };
 
@@ -877,21 +850,37 @@
           select.value = value;
           updateSelectStyle(select);
         });
+		
+        // Weight filter
+		
+		const checkboxes = document.querySelectorAll('input.weight-checkbox[type="checkbox"]');
+		
+		checkboxes.forEach(function(checkbox, index) {
+			checkbox.checked = filterState.weightCheckboxList[index];
+		});
+			
         
         // Restore stock filter button state
         const stockButton = document.getElementById('stock-filter');
         if (filterState.stockFilter) {
           stockButton.classList.add('active');
-          stockButton.textContent = 'Show All Items';
+          stockButton.textContent = 'Showing All Items';
         } else {
           stockButton.classList.remove('active');
           stockButton.textContent = 'In Stock Only';
         }
       } else {
+		  
+		  const checkboxes = document.querySelectorAll('input.weight-checkbox[type="checkbox"]');
+		checkboxes.forEach(function(checkbox) {
+			checkbox.checked = true;
+		});
+		 document.getElementById('sort-filter').value = "price-asc";
         // Set default state for first-time users: In Stock Only
         const stockButton = document.getElementById('stock-filter');
         stockButton.classList.remove('active');
         stockButton.textContent = 'In Stock Only';
+		
       }
 
       // Always reset search input
@@ -899,6 +888,11 @@
       const clearSearchButton = document.getElementById('clear-search');
       searchInput.value = '';
       clearSearchButton.style.display = 'none';
+	  
+		const dropdownContent = document.getElementById('weight-filter-dropdown');
+		const applyButton = dropdownContent.querySelector('.apply-filters');
+		//applyButton.click();
+		updateWeightToggleText();
     }
 
     // Event listeners for filters
@@ -914,11 +908,12 @@
       saveFilterState();
     });
 
-    document.getElementById('weight-filter').addEventListener('change', (e) => {
+   /* document.getElementById('weight-filter').addEventListener('change', (e) => {
       updateSelectStyle(e.target);
       filterProducts();
       saveFilterState();
-    });
+    });*/
+	
 
     document.getElementById('sort-filter').addEventListener('change', (e) => {
       updateSelectStyle(e.target);
@@ -943,11 +938,12 @@
     document.getElementById('stock-filter').addEventListener('click', () => {
       const button = document.getElementById('stock-filter');
       button.classList.toggle('active');
-      button.textContent = button.classList.contains('active') ? 'Show All Items' : 'In Stock Only';
+      button.textContent = button.classList.contains('active') ? 'Showing All Items' : 'In Stock Only';
       filterProducts();
       saveFilterState();
     });
 
+    
     // Function to compare products and detect changes
     function detectProductChanges(oldProducts, newProducts) {
       log(LOG_LEVELS.INFO, '=== Starting Product Change Detection ===');
@@ -1028,7 +1024,7 @@
 
               if (oldVariant) {
                 if (oldVariant.available !== newVariant.available ||
-                    oldVariant.price !== newVariant.price) {
+                    oldVariant.price !== newVariant.price && newVariant.available) {
                   hasChanges = true;
                   changedVariants.push({
                     ...newVariant,
@@ -1303,12 +1299,13 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
 
       updateCheckerId = setInterval(async () => {
         try {
-          const freshProducts = await getProducts();
+          const freshProducts = await getProducts(false); 
           const changes = detectProductChanges(lastProducts, freshProducts);
           
           if (changes.new.length > 0 || changes.stockChanged.length > 0 || changes.removed.length > 0) {
             console.log('Changes detected, updating state and sending notifications...');
             await handleNotifications(changes);
+			window.showNotification("Changes detected, updating state and sending notifications...", 60000);
             products = freshProducts;
             lastProducts = freshProducts;
             filterProducts();
@@ -1325,9 +1322,27 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
     // Filter THCA products
     function filterTHCAProducts(products) {
       const thcaProducts = products.filter(product => 
+        product.id
+      );
+      //console.log(`Filtered ${products.length} total products to ${thcaProducts.length} THCA products`);
+      return thcaProducts;
+    }
+    /* Filter THCA products old
+    function filterTHCAProducts(products) {
+      const thcaProducts = products.filter(product => 
         product.title.toLowerCase().includes('thca') || 
         product.tags.includes('thca') || 
         product.product_type === 'THCA Flower'
+      );
+      //console.log(`Filtered ${products.length} total products to ${thcaProducts.length} THCA products`);
+      return thcaProducts;
+    }*/
+    // Filter Other products
+    function filterOtherProducts(products) {
+      const thcaProducts = products.filter(product => 
+        !product.title.toLowerCase().includes('thca') || 
+        !product.tags.includes('thca') || 
+        !product.product_type === 'THCA Flower'
       );
       //console.log(`Filtered ${products.length} total products to ${thcaProducts.length} THCA products`);
       return thcaProducts;
@@ -1362,6 +1377,7 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
 
     // Add these utility functions for status management
     const statusManager = {
+	  timeoutIds: [],
       show: (message, type = 'error') => {
         const statusBar = document.getElementById('site-status');
         const statusMessage = document.getElementById('status-message');
@@ -1373,11 +1389,22 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
         
         // Show retry button for errors
         retryButton.style.display = type === 'error' ? 'inline-block' : 'none';
+		const messageShowTime = 2500;
+		if(statusManager.timeoutIds.length > 0)
+		{
+			
+		}
+		statusManager.timeoutIds.push(setTimeout(() => { statusManager.hide(messageShowTime); }, messageShowTime));
+		if(statusManager.timeoutIds.length > 0)
+			console.log('notification added to notification que. total: ' + statusManager.timeoutIds.length);
+		//let timerId = setTimeout(() => {
+		//	statusManager.hide(messageShowTime);
+		//}, messageShowTime); // Schedules the function to run after 5 seconds
       },
       
-      hide: () => {
-        const statusBar = document.getElementById('site-status');
-        statusBar.style.display = 'none';
+      hide: (time) => {
+			const statusBar = document.getElementById('site-status');
+			statusBar.classList.toggle('hide');
       },
       
       update: (message) => {
@@ -1415,10 +1442,7 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
 
         // Update status message to show next check time
         const nextCheck = new Date(Date.now() + MAINTENANCE_CHECK_INTERVAL);
-        statusManager.show(
-          `LitFarms website is in maintenance mode. Next check at ${nextCheck.toLocaleTimeString()}. Using cached data.`,
-          'warning'
-        );
+		window.showNotification(`LitFarms website is in maintenance mode. Next check at ${nextCheck.toLocaleTimeString()}. Using cached data.`, 60000, "Error");
 
         maintenanceCheckerId = setInterval(async () => {
           try {
@@ -1438,14 +1462,109 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
             console.log('Site still in maintenance mode');
             // Update status message with next check time
             const nextCheck = new Date(Date.now() + MAINTENANCE_CHECK_INTERVAL);
-            statusManager.show(
-              `LitFarms website is in maintenance mode. Next check at ${nextCheck.toLocaleTimeString()}. Using cached data.`,
-              'warning'
-            );
+            window.showNotification(`LitFarms website is in maintenance mode. Next check at ${nextCheck.toLocaleTimeString()}. Using cached data.`, 60000, "Error");
+
           }
         }, MAINTENANCE_CHECK_INTERVAL);
       }
 
+    // 4. Update the Toggle Button text... (Logic remains the same)
+    function updateWeightToggleText() {
+		const weightList = document.getElementById('weight-checkbox-list');
+		const toggleButton = document.getElementById('weight-dropdown-toggle');
+        const selectedCount = weightList.querySelectorAll('input[type="checkbox"]:checked').length;
+        if (selectedCount > 0) {
+            toggleButton.firstChild.textContent = `Weight (${selectedCount})`;
+        } else {
+            toggleButton.firstChild.textContent = 'Weight';
+        }
+    }
+	
+	function countArrayChanges(currentArray, cachedJson, idKey = 'id') {
+
+		// 1. Parse the cached JSON back into an array
+		const cachedArray = JSON.parse(cachedJson);
+		let totalChanges = 0;
+
+		/**
+		 * Helper to create a Map keyed by the unique identifier.
+		 * @param {Array<Object>} arr The array to map.
+		 * @returns {Map<string|number, Object>} Map of ID to the object.
+		 */
+		const buildIdMap = (arr) => {
+			const map = new Map();
+			for (const item of arr) {
+				// Check for the mandatory ID key
+				if (!item.hasOwnProperty(idKey)) {
+					console.error(`Error: Object missing required ID key '${idKey}'. Property change tracking requires unique IDs.`);
+					continue;
+				}
+				map.set(item[idKey], item);
+			}
+			return map;
+		};
+
+		/**
+		 * Deeply compares two objects and counts the number of properties that are different,
+		 * added, or removed. The ID key is ignored in the change count.
+		 * @param {Object} oldObj The cached object (or empty object if addition).
+		 * @param {Object} newObj The current object (or empty object if removal).
+		 * @returns {number} The count of property differences.
+		 */
+		const countPropertyChanges = (oldObj, newObj) => {
+			const oldKeys = Object.keys(oldObj);
+			const newKeys = Object.keys(newObj);
+			const allKeys = new Set([...oldKeys, ...newKeys]);
+			let changes = 0;
+
+			for (const key of allKeys) {
+				// Skip the unique ID key itself
+				if (key === idKey) continue; 
+
+				const oldValue = oldObj[key];
+				const newValue = newObj[key];
+				
+				// Check for property existence difference (added or removed property)
+				if (oldValue === undefined || newValue === undefined) {
+					// Property added (old undefined) or removed (new undefined)
+					changes++;
+				} 
+				// Check for value difference (using stringify for deep check of nested data)
+				else if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+					changes++;
+				}
+			}
+			return changes;
+		};
+
+		// 2. Create ID-keyed maps for efficient lookup
+		const currentMap = buildIdMap(currentArray);
+		const cachedMap = buildIdMap(cachedArray);
+
+		// 3. Collect all unique IDs present in either array
+		const allIds = new Set([...currentMap.keys(), ...cachedMap.keys()]);
+
+		// 4. Iterate over all IDs and count property changes
+		for (const id of allIds) {
+			const currentItem = currentMap.get(id);
+			const cachedItem = cachedMap.get(id);
+
+			if (currentItem && cachedItem) {
+				// MODIFICATION: Item exists in both, count property differences
+				totalChanges += countPropertyChanges(cachedItem, currentItem);
+
+			} else if (currentItem) {
+				// ADDITION: Item only in current, count all its properties as changes
+				totalChanges += countPropertyChanges({}, currentItem);
+
+			} else if (cachedItem) {
+				// REMOVAL: Item only in cached, count all its properties as changes
+				totalChanges += countPropertyChanges(cachedItem, {});
+			}
+		}
+
+		return totalChanges;
+	}
       async function tryLoad() {
         try {
           // Hide any existing status messages
@@ -1456,24 +1575,34 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
           
           // First try to load cached products immediately
           products = await getProducts(true);
-          
+		  getTiers();
+		  getWeights();
           if (Array.isArray(products) && products.length > 0) {
             console.log(`Loaded ${products.length} cached THCA products`);
             loadFilterState();
             await loadStrainData();
             
             // Show products immediately
-            toggleLoader(false);
-            filterProducts();
             
+			//alert("Yeet");
+            filterProducts();
             // Then check for updates in the background
             try {
+				console.log('lol');
               const updatedProducts = await getProducts(false);
-              if (JSON.stringify(products) !== JSON.stringify(updatedProducts)) {
-                console.log('Products updated, refreshing display');
-                products = updatedProducts;
-                filterProducts();
-              }
+			  //const changes = detectProductChanges(products, updatedProducts);
+			  let variantsInStockNum = 0;
+				products.forEach(product => {
+					
+					let variantsInStock = product.variants;
+					
+			variantsInStock = variantsInStock.filter(v => WEIGHTS.includes(utils.isWeight(v.option1) ? v.option1 : utils.isWeight(v.option2) ? v.option2 : null) );
+              variantsInStock = variantsInStock.filter(v => v.available === true);
+					variantsInStockNum += variantsInStock.length;
+				});
+				window.showNotification(`${variantsInStockNum}/${products.length} total products found.`, 5000, "Lost in Translation");
+
+			  
             } catch (updateError) {
               console.warn('Background update failed:', updateError);
               if (updateError.message.includes('401')) {
@@ -1491,12 +1620,12 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
             loadFilterState();
             await loadStrainData();
             
-            toggleLoader(false);
             filterProducts();
           }
 
           // Start the update checker
           startProductUpdateChecker();
+          toggleLoader(false);
           
           return true; // Success
         } catch (error) {
@@ -1507,9 +1636,10 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
               // We have cached data, start maintenance checker
               startMaintenanceChecker();
             } else {
-              statusManager.show('LitFarms website is currently in maintenance mode. Please try again later.', 'error');
+				window.showNotification(`LitFarms website is currently in maintenance mode. Please try again later.`, 60000);
             }
           } else {
+			  window.showNotification(`Unable to load products. Please try again later.`, 60000);
             statusManager.show('Unable to load products. Please try again later.', 'error');
           }
           
@@ -1689,9 +1819,6 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
       }
 
       // Search event listener
-      searchInput.addEventListener('input', (e) => {
-        filterProducts(e.target.value);
-      });
 
       // Clear search when modal is opened
       searchInput.value = '';
@@ -2044,9 +2171,6 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
       }
 
       // Search event listener
-      searchInput.addEventListener('input', (e) => {
-        filterProducts(e.target.value);
-      });
 
       // Clear search when modal is opened
       searchInput.value = '';
@@ -2110,9 +2234,74 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
     });
 
     // Utility Functions
-    const WEIGHTS = ['28g', '3.5g', '7g'];
-    const TIERS = ['Essential', 'Preferred', 'Supreme'];
-    
+    let WEIGHTS = ['28g', '28g (Smalls)', '3.5g'];
+    let TIERS = [];
+
+  function getTiers() {
+	let newTiers = [];
+	const strainFilterElement = document.getElementById('strain-filter');
+	strainFilterElement.innerHTML = '';
+	const allOptionHTML = `<option value="all">All Tiers</option>`;
+	strainFilterElement.innerHTML += allOptionHTML;
+	products.forEach(product => {
+		const options = product.options;
+		options.forEach(option => {
+			const name = option.name; 
+			const values = option.values;
+			if(name!="Tier")
+				return;
+			values.forEach(value => {
+				//console.log(value);
+					const variantIsInStock = product.variants.some(v => v.option1 === value && v.available && option.name != "Style");
+					if (value != product.title && variantIsInStock && !newTiers.includes(value)) newTiers.push(value);
+			});
+		});
+	});
+	newTiers.push("Other");
+	TIERS = newTiers;
+	TIERS.forEach(tier => {
+	
+		// Output: [ 'Gold For Less', 'Berry Blast', 'Sativa Sour Diesel', 'Chocolate Bar' ]
+		const newOptionHTML = `<option value="${tier}">${tier}</option>`;
+		// 3. Append the new option HTML to the innerHTML of the select element
+		strainFilterElement.innerHTML += newOptionHTML;
+	});
+	console.log("Tiers:", newTiers);
+  }
+  function getWeights() {
+	let newTiers = [];
+	const strainFilterElement = document.getElementById('weight-checkbox-list');
+	strainFilterElement.innerHTML = '';
+	products.forEach(product => {
+		const options = product.options;
+		options.forEach(option => {
+			const name = option.name;
+			if(name.toLowerCase() == "weight") {
+				const values = option.values;
+				values.forEach(val => {
+					if(!newTiers.includes(val)) {
+						const variantIsInStock = product.variants.some(v => v.available === true && v.option2.toLowerCase().includes(val.toLowerCase()));
+						if (variantIsInStock) newTiers.push(val);
+						
+					}
+				});
+			}
+		});
+	});
+	newTiers.push("Other");
+	WEIGHTS = newTiers;
+	WEIGHTS.forEach(tier => {
+	
+		// Output: [ 'Gold For Less', 'Berry Blast', 'Sativa Sour Diesel', 'Chocolate Bar' ]
+		const newOptionHTML = `<li><label>
+			<input type="checkbox" value="${tier}" class="weight-checkbox"> 
+			${tier}
+        </label></li>`;
+		// 3. Append the new option HTML to the innerHTML of the select element
+		strainFilterElement.innerHTML += newOptionHTML;
+	});
+	console.log("Weights:", newTiers);
+  }
     const utils = {
       isWeight: (value) => value && WEIGHTS.includes(value),
       isTier: (value) => value && TIERS.includes(value),
@@ -2121,16 +2310,31 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
       standardizeWeight: (weightStr) => {
         if (!weightStr) return null;
         weightStr = weightStr.trim();
-        if (weightStr.match(/^\d+\.?\d*$/)) weightStr += 'g';
-        if (weightStr === '3.5') weightStr = '3.5g';
         return weightStr;
       },
       
       processVariants: (product) => {
         return product.variants.map(v => {
-          const weight = utils.isWeight(v.option1) ? v.option1 : utils.isWeight(v.option2) ? v.option2 : null;
-          let tier = utils.isTier(v.option1) ? v.option1 : utils.isTier(v.option2) ? v.option2 : null;
-          if (weight && !tier) tier = 'Essential';
+			let weight = null;
+			if (utils.isWeight(v.option1)) {
+				weight = v.option1;
+			} else if (utils.isWeight(v.option2)) {
+				weight = v.option2;
+			} else if (!WEIGHTS.includes(v.option2)) {
+				weight = "Other";
+			}
+			let tier = null;
+			if (utils.isTier(v.option1)) {
+				tier = v.option1;
+			} else if (utils.isTier(v.option2)) {
+				tier = v.option2;
+			} else if (!TIERS.includes(v.option2)) {
+				tier = "Other";
+			}
+          //let tier = utils.isTier(v.option1) ? v.option1 : utils.isTier(v.option2) ? v.option2 : null;
+		  //console.log(tier);
+          if (weight && !tier) tier = v.title;
+		  if (!weight && !tier) { tier = product.title; console.log("NO WEIGHT OR TIER"); };
           return {
             ...v,
             correctedWeight: weight,
@@ -2147,13 +2351,14 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
         const parts = str.split('/').map(s => s.trim());
         const weightPart = parts.find(p => utils.isWeight(utils.standardizeWeight(p)));
         const tierPart = parts.find(p => TIERS.includes(p));
+		
         return { 
           weight: weightPart ? utils.standardizeWeight(weightPart) : null, 
           tier: tierPart 
         };
       },
 
-      sortProducts: (products, sortFilter, strainFilter, weightFilter) => {
+      sortProducts: (products, sortFilter, strainFilter) => {
         return [...products].sort((a, b) => {
           switch (sortFilter) {
             case 'alpha-asc':
@@ -2161,9 +2366,9 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
             case 'alpha-desc':
               return b.title.localeCompare(a.title);
             case 'date-desc':
-              return new Date(b.published_at) - new Date(a.published_at);
+			  return new Date(b.created_at) - new Date(a.created_at);
             case 'date-asc':
-              return new Date(a.published_at) - new Date(b.published_at);
+              return new Date(a.created_at) - new Date(b.created_at);
             case 'price-asc':
             case 'price-desc': {
               // Get valid variants for both products
@@ -2173,11 +2378,14 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
               // Filter variants based on current filters
               let relevantAVariants = aVariants;
               let relevantBVariants = bVariants;
+			  
+			  
+              if (selectedWeights.length <= 2) { //if not all wieghts are selected
+			    relevantAVariants = relevantAVariants.filter(v => selectedWeights.some(allowedWeight => allowedWeight === v.correctedWeight));
+			    relevantBVariants = relevantBVariants.filter(v => selectedWeights.some(allowedWeight => allowedWeight === v.correctedWeight));
 
-              if (weightFilter !== 'all') {
-                relevantAVariants = relevantAVariants.filter(v => v.correctedWeight === weightFilter);
-                relevantBVariants = relevantBVariants.filter(v => v.correctedWeight === weightFilter);
               }
+			  
               if (strainFilter !== 'all') {
                 relevantAVariants = relevantAVariants.filter(v => v.correctedTier === strainFilter);
                 relevantBVariants = relevantBVariants.filter(v => v.correctedTier === strainFilter);
@@ -2225,9 +2433,11 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
       productCount: document.getElementById('product-count'),
       strainFilter: document.getElementById('strain-filter'),
       strainTypeFilter: document.getElementById('strain-type-filter'),
-      weightFilter: document.getElementById('weight-filter'),
+      //weightFilter: document.getElementById('weight-filter'),
       sortFilter: document.getElementById('sort-filter'),
       stockFilter: document.getElementById('stock-filter'),
+      weightCheckboxList: document.getElementById('weight-checkbox-list'),
+      weightCheckboxListSelectedOptions: document.getElementsByClassName('weight-checkbox'),
       searchInput: document.getElementById('product-search-filter'),
       clearSearch: document.getElementById('clear-search'),
       loader: document.getElementById('loader'),
@@ -2259,15 +2469,12 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
     // Update startCountdownTimer function for better state management
     function startCountdownTimer(intervalMs) {
       const countdownEl = document.querySelector('.countdown-time');
-      const tooltipTimeEl = document.querySelector('.tooltip-time');
-      const progressCircle = document.querySelector('.progress');
+	  //const clockElement = document.querySelector('.countdown-circle');
+
       const circumference = 2 * Math.PI * 16; // r = 16
       
       // Reset all visual elements first
-      progressCircle.style.strokeDasharray = circumference;
-      progressCircle.style.strokeDashoffset = 0;
       countdownEl.textContent = '';
-      tooltipTimeEl.textContent = '';
       
       let timeLeft = intervalMs;
       let timerId = null;
@@ -2282,12 +2489,13 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
         const display = `${minutes}:${seconds.toString().padStart(2, '0')}`;
         
         countdownEl.textContent = display;
-        tooltipTimeEl.textContent = display;
         
         // Update progress circle
         const progress = (timeLeft / intervalMs) * 100;
         const offset = circumference - (progress / 100) * circumference;
-        progressCircle.style.strokeDashoffset = offset;
+		const angle = Math.floor((progress / 100) * 360);
+		//console.log('Angle: ' + angle);
+		//clockElement.style.setProperty('--clock-progress', offset + 'deg');
         
         timeLeft -= 1000;
         
@@ -2311,8 +2519,6 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
         }
         // Reset visual elements on cleanup
         countdownEl.textContent = '';
-        tooltipTimeEl.textContent = '';
-        progressCircle.style.strokeDashoffset = 0;
       };
     }
 
@@ -2504,8 +2710,9 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
       });
     });
 
+	
     // Update createPriceContainer to add "Add to Cart" buttons
-    function createPriceContainer(product, variants, strainFilter, weightFilter, stockFilter) {
+    function createPriceContainer(product, variants, strainFilter, stockFilter) {
       const container = document.createElement('div');
       container.className = 'price-container';
 
@@ -2530,7 +2737,7 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
         const tierVariants = variantsByTier[tier];
         if (tierVariants && tierVariants.length > 0) {
           const filteredVariants = tierVariants.filter(variant => {
-            if (weightFilter !== 'all' && variant.correctedWeight !== weightFilter) {
+            if (selectedWeights.length < 2 && !selectedWeights.includes(variant.correctedWeight)) {
               return false;
             }
             if (!stockFilter && !variant.available) {
@@ -2538,7 +2745,7 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
             }
             return true;
           });
-
+			//console.log('filteredVariants Length: ' + filteredVariants.length);
           if (filteredVariants.length > 0) {
             const section = document.createElement('div');
             section.className = `variant-section variant-section-${tier.toLowerCase()}`;
@@ -2568,10 +2775,17 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
 
               const label = document.createElement('span');
               label.className = 'weight-label';
-              label.textContent = variant.correctedWeight;
+			  
+			  if(variant.correctedWeight.includes("Smalls"))
+				  label.innerHTML = `${variant.correctedWeight.split(" ")[0]} <ss style="font-size:0.9vh;">${variant.correctedWeight.split(" ")[1]}</ss>`;
+			  else if(variant.correctedWeight.includes("Other"))
+				label.textContent = variant.option1;
+			  else
+				label.textContent = variant.correctedWeight;
 
               const price = document.createElement('span');
               price.className = 'weight-price';
+			  
               price.textContent = `$${variant.price}`;
 
               info.appendChild(label);
@@ -2588,6 +2802,24 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
               if (variant.available) {
                 const addButton = document.createElement('button');
                 addButton.className = 'add-to-cart-button';
+				switch (variant.correctedTier) {
+				  case "Essential":
+					addButton.style.backgroundColor =  "rgba(115, 248, 113, 1)";
+					addButton.style.color =  "#000";
+					break;
+				  case "Preferred":
+					addButton.style.backgroundColor =  "rgba(142, 113, 248, 1)";
+					addButton.style.color =  "#fff";
+					break;
+				  case "Supreme":
+					addButton.style.backgroundColor =  "#FCD34D";
+					addButton.style.color =  "#000";
+					break;
+				  case "Other":
+					addButton.style.backgroundColor =  "rgba(217, 13, 13, 1)";
+					addButton.style.color =  "#000";
+					break;
+				}
                 addButton.textContent = 'Add to Cart';
                 addButton.onclick = (e) => {
                   e.stopPropagation();
@@ -2607,16 +2839,10 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
 
       return container;
     }
+	
   </script>
-
   <!-- Settings Button -->
-  <button id="settings-button" title="Notification Settings">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
-      <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
-    </svg>
-  </button>
-
+  
   <!-- Settings Modal -->
   <div class="modal-overlay" id="settings-modal">
     <div class="modal">
@@ -2752,18 +2978,51 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
     </div>
   </div>
 
-  <!-- Virtual Cart Button -->
-  <button id="virtual-cart-button" class="virtual-cart-button" title="View Cart">
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="9" cy="21" r="1"></circle>
-      <circle cx="20" cy="21" r="1"></circle>
-      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-    </svg>
-    <span class="cart-count">0</span>
-  </button>
+  <div class="fab-container">
+    <button id="settings-button" title="Settings">
+      <svg class="fab-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+    </button>
+
+    <button id="virtual-cart-button" title="View Cart">
+      <svg class="fab-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <circle cx="9" cy="21" r="1"></circle>
+        <circle cx="20" cy="21" r="1"></circle>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+      </svg>
+	  <span class="cart-count" id="cart-item-count">0</span>
+    </button>
+	<!-- Theme Toggle Button -->
+	
+<button id="theme-editor-fab" class="fab" aria-label="Theme Editor">
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 15 15" fill="currentColor">
+    <path d="M14.8536 0.146458C15.0137 0.306636 15.0462 0.554489 14.9327 0.75053L11.0919 7.38473L7.61529 3.90815L14.2495 0.0672985C14.4455 -0.0461989 14.6934 -0.0137194 14.8536 0.146458Z" fill="currentColor"/>
+<path d="M6.71962 4.4267L4.74949 5.5673C4.61505 5.64513 4.52443 5.78102 4.50424 5.93505C4.48406 6.08907 4.53661 6.24372 4.64645 6.35356L8.64645 10.3536C8.75629 10.4634 8.91095 10.516 9.06497 10.4958C9.21899 10.4756 9.35489 10.385 9.43272 10.2505L10.5733 8.2804L6.71962 4.4267Z" fill="currentColor"/>
+<path d="M0.990239 10.4411C1.36415 9.12348 2.56732 8.21423 3.93696 8.21423H4.00003C5.65688 8.21423 7.00003 9.55738 7.00003 11.2142V11.2671C7.00003 12.8948 5.68055 14.2142 4.0529 14.2142H3.97308C3.58727 14.2142 3.20631 14.1282 2.85797 13.9623C2.35145 13.7211 1.75543 13.764 1.28865 14.0752L0.77738 14.416C0.603104 14.5322 0.374884 14.5275 0.205597 14.4041C0.036311 14.2808 -0.0381583 14.065 0.0190225 13.8635L0.990239 10.4411Z" fill="currentColor"/>
+	</svg>
+</button>
+	<button id="theme-toggle" aria-label="Toggle Theme">
+		<svg id="sun-icon" class="theme-mode-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			<circle cx="12" cy="12" r="5"/>
+			<line x1="12" y1="1" x2="12" y2="3"/>
+			<line x1="12" y1="21" x2="12" y2="23"/>
+			<line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+			<line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+			<line x1="1" y1="12" x2="3" y2="12"/>
+			<line x1="21" y1="12" x2="23" y2="12"/>
+			<line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+			<line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+		</svg>
+	</button>
+	
+  </div>
 
   <!-- Cart Modal -->
-  <div id="cart-modal" class="cart-modal">
+  
+  <div id="cart-modal" class="modal-overlay ">
+    <div class="modal">
     <div class="cart-modal-content">
       <div class="modal-header">
         <h2 class="modal-title">Shopping Cart</h2>
@@ -2779,6 +3038,938 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
         Proceed to Checkout
       </button>
     </div>
+	</div>
   </div>
+  
+
+
+
+<div id="weight-filter-dropdown" class="dropdown-content glass-element fixed-dropdown">
+    <ul id="weight-checkbox-list">
+		<li><label>
+			<input type="checkbox" value="28g" class="weight-checkbox"> 
+			28g
+        </label></li>
+		<li><label>
+			<input type="checkbox" value="28g (Smalls)" class="weight-checkbox"> 
+			28g (Smalls)
+        </label></li>
+		<li><label>
+			<input type="checkbox" value="3.5g" class="weight-checkbox"> 
+			3.5g
+		</label></li>
+	</ul>
+    <div class="dropdown-actions">
+        <button class="clear-selection">Clear</button>
+        <button class="apply-filters">Apply</button>
+    </div>
+</div>
+
+<script>
+
+
+
+    // Initialize Theme Toggling and Persistence
+    document.addEventListener('DOMContentLoaded', () => {
+        const themeToggle = document.getElementById('theme-toggle');
+
+        // 1. Theme Toggle Click Listener
+        themeToggle.addEventListener('click', () => {
+            // Check if the light theme is currently active
+            const isLight = document.documentElement.classList.contains('light');
+            // Determine the new theme
+            const newTheme = isLight ? 'dark' : 'light';
+            
+            applyTheme(newTheme);
+        });
+
+        // 2. Load Saved Theme on Startup
+        // Get saved theme or default to 'dark'
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        applyTheme(savedTheme);
+    });
+/* --- Weight Checkbox Dropdown Handlers (Absolute Position + Scroll Fix) --- */
+function setupWeightDropdown() {
+    const toggleButton = document.getElementById('weight-dropdown-toggle');
+    const dropdownContent = document.getElementById('weight-filter-dropdown');
+    const weightList = document.getElementById('weight-checkbox-list');
+    const applyButton = dropdownContent.querySelector('.apply-filters');
+    const clearButton = dropdownContent.querySelector('.clear-selection');
+
+    applyButton.addEventListener('click', (e) => {
+      //updateSelectStyle(e.target);
+      filterProducts();
+      saveFilterState();
+    });
+    function positionDropdown() {
+        const rect = toggleButton.getBoundingClientRect();
+        
+        // Calculate position relative to the document (Page Offset)
+        const topPosition = rect.top + window.scrollY;
+        const leftPosition = rect.left + window.scrollX;
+        
+        // Set the dropdown's position using position: absolute coordinates
+        // rect.height + 8px for margin
+        dropdownContent.style.top = `${topPosition + rect.height + 8}px`; 
+        dropdownContent.style.left = `${leftPosition}px`;
+    }
+
+    function openWeightDropdown() {
+        toggleButton.setAttribute('aria-expanded', 'true');
+        dropdownContent.classList.add('visible');
+        positionDropdown(); // Set position on open
+        // Re-position on scroll if open
+        window.addEventListener('scroll', positionDropdown); 
+    }
+
+    function closeWeightDropdown() {
+        toggleButton.setAttribute('aria-expanded', 'false');
+        dropdownContent.classList.remove('visible');
+        window.removeEventListener('scroll', positionDropdown); // Remove listener on close
+    }
+
+    // 1. Toggle Dropdown Visibility
+    toggleButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isExpanded = toggleButton.getAttribute('aria-expanded') === 'true';
+        if (isExpanded) {
+            closeWeightDropdown();
+        } else {
+            openWeightDropdown();
+        }
+    });
+
+    // Close dropdown if clicked outside
+    document.addEventListener('click', (e) => {
+        if (!dropdownContent.contains(e.target) && e.target !== toggleButton) {
+            closeWeightDropdown();
+        }
+    });
+
+    // 2. Clear Selections... (Logic remains the same)
+    clearButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        weightList.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        updateWeightToggleText();
+    });
+
+    // 3. Apply Filters and Close... (Logic remains the same)
+    applyButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // ... (Your filter logic remains here) ...
+        updateWeightToggleText();
+        closeWeightDropdown();
+    });
+    
+    // 4. Update the Toggle Button text... (Logic remains the same)
+    function updateWeightToggleText() {
+        const selectedCount = weightList.querySelectorAll('input[type="checkbox"]:checked').length;
+        if (selectedCount > 0) {
+            toggleButton.firstChild.textContent = `Weight (${selectedCount})`;
+        } else {
+            toggleButton.firstChild.textContent = 'Weight';
+        }
+    }
+    
+    weightList.addEventListener('change', updateWeightToggleText);
+    updateWeightToggleText(); 
+}
+ setupWeightDropdown();
+ 
+// --- Function to Populate the NEW Weight Checkbox Dropdown ---
+function populateWeightCheckboxes(uniqueWeights) {
+    const weightList = document.getElementById('weight-checkbox-list');
+    
+    // Clear any existing items in the list
+    weightList.innerHTML = ''; 
+
+    // Loop through your unique weights array
+    uniqueWeights.forEach(weight => {
+        const listItem = document.createElement('li');
+        
+        // Use a <label> wrapper for accessibility (clicking the text checks the box)
+        // Ensure the input type is "checkbox" and the value is the weight string
+        listItem.innerHTML = `
+            <label>
+                <input type="checkbox" value="${weight}" class="weight-checkbox"> 
+                ${weight}
+            </label>`;
+            
+        weightList.appendChild(listItem);
+    });
+    
+    // After populating, update the toggle text (if setupWeightDropdown is defined)
+    if (typeof updateWeightToggleText === 'function') {
+         updateWeightToggleText();
+    }
+}
+
+// NOTE: You must call this function after fetching and processing your product data!
+// Example call: populateWeightCheckboxes(myArrayOfUniqueWeights);
+
+</script>
+<script>
+    // ... your existing JavaScript code ...
+
+    // NEW: Filter Toggle Open/Close Logic
+			let firstStart = true;
+    document.addEventListener('DOMContentLoaded', () => {
+        const filterContainer = document.getElementById('filters-container');
+        const header = document.getElementById('filterstohide');
+        const toggleButton = document.getElementById('filter-toggle-button');
+        
+        if (filterContainer && toggleButton) {
+            
+            // Utility function to check if the screen size matches the mobile breakpoint
+            function isMobile() {
+                return window.matchMedia("(max-width: 768px)").matches;
+            }
+
+            // 1. Initialize state: Close filters by default on mobile
+            if (isMobile()) {
+                //filterContainer.classList.add("filters-closed");
+                //toggleButton.setAttribute('aria-expanded', 'false');
+            }
+// 2. Click Handler
+            toggleButton.addEventListener('click', () => {
+                // Toggles the class that triggers the CSS max-height/opacity animation
+                let isClosed = toggleButton.getAttribute('aria-expanded');
+                if(isClosed == 'true') {
+					header.style.display = "none";
+					//toggleButton.setAttribute('aria-expanded', 'true');
+					filterContainer.classList.add("filters-closed");
+					toggleButton.setAttribute('aria-expanded', 'false');
+					toggleButton.innerHTML = toggleButton.innerHTML.replace("Hide Filters", "Show Filters");
+				}
+				else {
+					//toggleButton.setAttribute('aria-expanded', 'false');
+					header.style.display = "block";
+                    filterContainer.classList.remove('filters-closed');
+					toggleButton.setAttribute('aria-expanded', 'true');
+					toggleButton.innerHTML = toggleButton.innerHTML.replace("Show Filters", "Hide Filters");
+				
+				}
+				console.log('aria: ' + isClosed);
+                // Update accessibility attribute
+            });
+            // 3. Re-evaluate on window resize (to handle switching between desktop/mobile)
+            let checkInitialState = null;
+            window.addEventListener('resize', () => {
+                clearTimeout(checkInitialState);
+                checkInitialState = setTimeout(() => {
+                    if (isMobile()) {
+                        // Apply closed state if entering mobile view
+                        filterContainer.classList.add('filters-closed');
+                        toggleButton.setAttribute('aria-expanded', 'false');
+                    } else {
+                        // Ensure filters are open on desktop view
+                        filterContainer.classList.remove('filters-closed');
+                        toggleButton.setAttribute('aria-expanded', 'true');
+                    }
+                }, 200); // Debounce for performance
+            });
+        }
+    });
+
+    // ... your existing JavaScript code ...
+</script>
+
+	<div id="theme-editor-modal" class="modal-backdrop">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Theme Editor</h2>
+            <button id="close-modal-button" class="modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-content">
+            <div class="theme-switch-container">
+                <label for="theme-selector">Editing Theme:</label>
+                <select id="theme-selector">
+                    <option value="dark">Dark Theme</option>
+                    <option value="light">Light Theme</option>
+                </select>
+            </div>
+            <div id="color-inputs-container" class="color-inputs-grid">
+                </div>
+        </div>
+        <div class="modal-footer">
+            <button id="apply-theme-button" class="action-button primary-button">Apply & Save Changes</button>
+            <button id="reset-theme-button" class="action-button secondary-button">Reset Current Theme</button>
+        </div>
+    </div>
+</div>
+
+    <script>
+    const modal = document.getElementById('theme-editor-modal');
+    const fab = document.getElementById('theme-editor-fab');
+    const closeModalBtn = document.getElementById('close-modal-button');
+    const applyBtn = document.getElementById('apply-theme-button');
+    const resetBtn = document.getElementById('reset-theme-button');
+    const themeSelector = document.getElementById('theme-selector');
+/*
+            NOTIFICATION MODULE: JAVASCRIPT LOGIC (COPY THIS)
+            This script initializes the system and exposes the showNotification function globally.
+        */
+
+        // --- MODULE GLOBAL STATE ---
+        let activeNotificationTimeouts = [];
+        let notificationCounter = 0;
+        const NOTIFICATION_DURATION = 5000; // Default duration in milliseconds
+
+        /**
+         * Creates and styles the visual DOM element for a notification.
+         */
+        function createNotificationElement(message, counter, title) {
+            const el = document.createElement('div');
+            el.id = 'notification-' + counter;
+            
+            // Uses the custom CSS class
+            el.className = 'notification-item';
+            
+            // Inner content using inline or basic styles
+            el.innerHTML = `
+                <div style="font-weight: 600; color: var(--text-secondary);">${title}</div>
+                <p style="color: var(--text-muted); margin-top: 0.8rem;">${message}</p>
+                <button onclick="window.cancelNotificationByID(${counter})" 
+                        class="notification-close-btn">
+                    &times;
+                </button>
+            `;
+            return el;
+        }
+
+        /**
+         * Hides the notification, clears its timeout, removes it from the list, and deletes it from the DOM.
+         * @param {number} notificationID - The unique counter ID of the notification to be removed.
+         * @param {boolean} isManual - True if removal was triggered by user or cancelAll.
+         */
+        function removeNotification(notificationID, isManual = false) {
+            const index = activeNotificationTimeouts.findIndex(item => item.counter === notificationID);
+
+            if (index === -1) {
+                return; // Already removed or cleared
+            }
+
+            const item = activeNotificationTimeouts[index];
+            const domElement = item.element;
+
+            // 1. Visually hide the notification by removing the 'visible' class
+            // This triggers the CSS slide-out transition back to the initial state
+            domElement.classList.remove('visible');
+
+            // 2. Schedule the DOM element removal after the transition (300ms)
+            setTimeout(() => {
+                domElement.remove();
+            }, 300);
+
+            // 3. Clean up the tracking list and clear the timeout if it hasn't expired
+            if (isManual) {
+                clearTimeout(item.id);
+                console.log(`[CANCELLED]: Notification #${item.counter} manually stopped.`);
+            } else {
+                console.log(`[CLEARED]: Notification #${item.counter} (Auto-clear).`);
+            }
+            
+            // Remove the entry from the tracking list
+            activeNotificationTimeouts.splice(index, 1);
+        }
+
+        /**
+         * GLOBAL FUNCTION: Schedules a new notification to appear.
+         * Use this function to show alerts in your application.
+         * @param {string} message - The content of the notification.
+         * @param {number} [duration=5000] - The duration in milliseconds before it clears.
+         */
+        window.showNotification = function(message, duration = NOTIFICATION_DURATION, title = "Information") {
+            notificationCounter++;
+            const currentID = notificationCounter;
+            const container = document.getElementById('notification-container');
+
+            if (!container) {
+                console.error("Notification container not found. Ensure the HTML structure is included in your body.");
+                return;
+            }
+            
+            // 1. Create and append the element
+            const notificationElement = createNotificationElement(message, currentID, title);
+            container.appendChild(notificationElement);
+
+            // 2. Use a slight delay to trigger the CSS transition (slide in)
+            setTimeout(() => {
+                // Add the 'visible' class to trigger the transition from off-screen
+                notificationElement.classList.add('visible');
+            }, 10);
+            
+            // 3. Schedule the automatic removal
+            const timeoutID = setTimeout(() => {
+                removeNotification(currentID, false);
+            }, duration);
+
+            // 4. Store the item
+            activeNotificationTimeouts.push({
+                id: timeoutID,
+                counter: currentID,
+                element: notificationElement
+            });
+            
+            console.log(`[SCHEDULED]: Notification #${currentID} set to clear in ${duration / 1000}s. Active: ${activeNotificationTimeouts.length}`);
+        }
+
+        /**
+         * GLOBAL FUNCTION: Used by the 'x' button on notifications to cancel the timer and close the alert.
+         * @param {number} notificationID - The ID of the notification to cancel.
+         */
+        window.cancelNotificationByID = function(notificationID) {
+            removeNotification(notificationID, true);
+        }
+        
+        /**
+         * GLOBAL FUNCTION: Clears all active timeouts and immediately removes all notifications.
+         */
+        window.cancelAllNotifications = function() {
+            if (activeNotificationTimeouts.length === 0) {
+                console.warn("--- No active notifications to clear ---");
+                return;
+            }
+
+            console.log("--- Manually Clearing All Notifications (Total: " + activeNotificationTimeouts.length + ") ---");
+
+            // Iterate over a copy to safely modify the original array during the loop
+            [...activeNotificationTimeouts].forEach(item => {
+                removeNotification(item.counter, true);
+            });
+        }
+        
+/* ====================================================================
+   THEME EDITOR LOGIC (v2.0 - Supports Color and Unit/String Variables)
+   ==================================================================== */
+
+const THEME_STORAGE_KEY = 'litFarmsCustomTheme';
+// Define ALL editable variables with their type and default values.
+// 'default' for colors is the opaque HEX equivalent for the color picker.
+// 'applyFormat' for colors specifies how the final CSS value should be constructed (using R, G, B placeholders).
+const THEME_VAR_DEFAULTS = {
+    // Dark Theme (:root) - Full Definition
+    'dark': {
+        /* Core Palette (Colors) */
+        '--bg-primary': { type: 'color', default: '#000000' },
+        '--bg-secondary': { type: 'color', default: '#0A121A', applyFormat: 'rgba(R, G, B, 0.4)' }, // 40% opacity
+        '--bg-elevated': { type: 'color', default: '#141E28', applyFormat: 'rgba(R, G, B, 0.6)' },  // 60% opacity
+        '--bg-accent-gradient': { type: 'color', default: '#1A202C' },
+
+        /* Accent Palette (Colors) */
+        '--accent-primary': { type: 'color', default: '#38BDF8' },
+        '--accent-secondary': { type: 'color', default: '#4A5568' },
+        '--accent-tertiary': { type: 'color', default: '#0EA5E9' },
+
+        /* Text Palette (Colors) */
+        '--text-primary': { type: 'color', default: '#E2E8F0' },
+        '--text-secondary': { type: 'color', default: '#94A3B8' },
+        '--text-muted': { type: 'color', default: '#72819c' },
+
+        /* Status & Strain Palette (Colors) */
+        '--status-success': { type: 'color', default: '#48BB78' },
+        '--status-error': { type: 'color', default: '#F87171' },
+        '--strain-sativa': { type: 'color', default: '#969612' },
+        '--strain-indica': { type: 'color', default: '#57549c' },
+        '--strain-hybrid': { type: 'color', default: '#129687' },
+        '--strain-unknown': { type: 'color', default: '#4A5568' },
+        
+        /* Effects & Overlays (Colors/Opacity) */
+        '--shadow-color': { type: 'color', default: '#000000', applyFormat: 'rgba(R, G, B, 0.9)' }, // 90% opacity
+        '--modal-overlay': { type: 'color', default: '#000000', applyFormat: 'rgba(R, G, B, 0.95)' }, // 95% opacity
+        '--border-glow': { type: 'color', default: '#4A5568', applyFormat: 'rgba(R, G, B, 0.4)' }, // 40% opacity
+
+        /* Layout & Motion (Units/Strings) */
+        '--radius-lg': { type: 'unit', default: '14px' },
+        '--blur-amount': { type: 'unit', default: '8px' },
+    },
+    // Light Theme (html[data-theme='light'])
+    'light': {
+        /* Core Palette (Colors) */
+        '--bg-primary': { type: 'color', default: '#dce9fc' },
+        '--bg-secondary': { type: 'color', default: '#FFFFFF', applyFormat: 'rgba(R, G, B, 0.6)' }, // 60% opacity
+        '--bg-elevated': { type: 'color', default: '#FFFFFF', applyFormat: 'rgba(R, G, B, 0.85)' }, // 85% opacity
+        '--bg-accent-gradient': { type: 'color', default: '#dbeafe' },
+
+        /* Accent Palette (Colors) */
+        '--accent-primary': { type: 'color', default: '#007aff' },
+        '--accent-secondary': { type: 'color', default: '#4fd8ff' },
+        '--accent-tertiary': { type: 'color', default: '#155fa8' },
+
+        /* Text Palette (Colors) */
+        '--text-primary': { type: 'color', default: '#0b1220' },
+        '--text-secondary': { type: 'color', default: '#344154' },
+        '--text-muted': { type: 'color', default: '#6b7280' },
+
+        /* Status & Strain Palette (Colors) */
+        '--status-success': { type: 'color', default: '#48BB78' },
+        '--status-error': { type: 'color', default: '#F87171' },
+        '--strain-sativa': { type: 'color', default: '#969612' },
+        '--strain-indica': { type: 'color', default: '#57549c' },
+        '--strain-hybrid': { type: 'color', default: '#129687' },
+        '--strain-unknown': { type: 'color', default: '#4A5568' },
+
+        /* Effects & Overlays (Colors/Opacity) */
+        // Note: The shadow-normal and shadow-hover strings cannot be directly edited via this system
+        '--shadow-color': { type: 'color', default: '#0A0F19', applyFormat: 'rgba(R, G, B, 0.15)' }, // Opaque HEX of (10, 15, 25)
+        '--border-glow': { type: 'color', default: '#007aff', applyFormat: 'rgba(R, G, B, 0.25)' }, // Opaque HEX of (0, 122, 255)
+        '--modal-overlay': { type: 'color', default: '#0A0A0A', applyFormat: 'rgba(R, G, B, 0.2)' }, // Opaque HEX of (10, 10, 10)
+
+        /* Layout & Motion (Units/Strings) */
+        '--radius-lg': { type: 'unit', default: '14px' },
+        '--blur-amount': { type: 'unit', default: '8px' },
+    }
+};
+
+let customThemeSettings = {};
+let currentEditingTheme = 'dark'; 
+
+/**
+ * Converts a HEX color string to an RGB object.
+ */
+function hexToRgb(hex) {
+    const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+    hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+        return r + r + g + g + b + b;
+    });
+
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
+}
+
+/**
+ * Loads custom theme settings from localStorage.
+ */
+function loadCustomTheme() {
+    const saved = localStorage.getItem(THEME_STORAGE_KEY);
+    customThemeSettings = saved ? JSON.parse(saved) : {};
+}
+
+/**
+ * Applies all saved or provided custom theme settings to the live page.
+ * NOTE: Updated to handle new structured defaults and complex RGBA values.
+ */
+function applyTheme(settings = customThemeSettings) {
+    // Check if settings object is empty and clear overrides if needed (removed for brevity but assumed functional)
+    if (Object.keys(settings).length === 0 || (!settings['dark'] && !settings['light'])) {
+        // ... (clear overrides logic) ...
+        const allVars = new Set([...Object.keys(THEME_VAR_DEFAULTS.dark), ...Object.keys(THEME_VAR_DEFAULTS.light)]);
+        allVars.forEach(varName => {
+            document.documentElement.style.removeProperty(varName);
+        });
+        const lightThemeStyle = document.getElementById('custom-light-theme-vars');
+        if (lightThemeStyle) lightThemeStyle.textContent = '';
+        return;
+    }
+
+
+    // 1. Apply Dark Theme overrides (applied to :root/document.documentElement)
+    const darkVars = settings['dark'] || {};
+    const darkDefaults = THEME_VAR_DEFAULTS.dark;
+
+    for (const varName in darkDefaults) {
+        const defaultDef = darkDefaults[varName];
+        let value = darkVars[varName];
+        
+        // If no custom value, check if we need to remove a previously applied custom property
+        if (!value || value.toUpperCase() === defaultDef.default.toUpperCase()) {
+            document.documentElement.style.removeProperty(varName);
+            continue;
+        }
+
+        let finalValue = value;
+
+        if (defaultDef.type === 'color' && defaultDef.applyFormat) {
+            // Apply transparency/special format for rgba variables
+            const rgb = hexToRgb(value);
+            if (rgb) {
+                 finalValue = defaultDef.applyFormat.replace('R', rgb.r).replace('G', rgb.g).replace('B', rgb.b);
+            } else {
+                finalValue = value; // Fallback to raw hex if parsing fails
+            }
+        }
+        
+        document.documentElement.style.setProperty(varName, finalValue);
+    }
+    
+    // 2. Apply Light Theme overrides (via a custom <style> block for 'html[data-theme="light"]')
+    const lightVars = settings['light'] || {};
+    const lightDefaults = THEME_VAR_DEFAULTS.light;
+    let lightThemeStyle = document.getElementById('custom-light-theme-vars');
+    let cssContent = "html[data-theme='light'] {\n";
+
+    for (const varName in lightDefaults) {
+        const defaultDef = lightDefaults[varName];
+        let value = lightVars[varName];
+        
+        // If no custom value or value is default, skip adding to CSS block
+        if (!value || value.toUpperCase() === defaultDef.default.toUpperCase()) {
+            // Remove property in case it was set inline by a previous custom setting
+            document.documentElement.style.removeProperty(varName); 
+            continue;
+        }
+
+        let finalValue = value; 
+        // NOTE: For simplicity, assuming light theme has no complex RGBA for now.
+        
+        cssContent += `  ${varName}: ${finalValue};\n`;
+        // Apply immediately to the root if the light theme is currently active for live rendering
+        if (document.documentElement.getAttribute('data-theme') === 'light' || document.documentElement.getAttribute('data-theme') === 'light-preview') {
+            document.documentElement.style.setProperty(varName, finalValue);
+        }
+    }
+    cssContent += "}\n";
+
+    if (Object.keys(lightVars).length > 0) {
+        if (!lightThemeStyle) {
+            const newStyle = document.createElement('style');
+            newStyle.id = 'custom-light-theme-vars';
+            document.head.appendChild(newStyle);
+            lightThemeStyle = newStyle;
+        }
+        lightThemeStyle.textContent = cssContent;
+    } else if (lightThemeStyle) {
+        lightThemeStyle.textContent = '';
+    }
+}
+
+/**
+ * Renders the color and unit input grid for the current editing theme.
+ */
+function renderColorInputs() {
+    // Check console for this message on every theme switch
+    console.log(`[Theme Editor] START Rendering inputs for: ${currentEditingTheme} theme.`); 
+
+    const container = document.getElementById('color-inputs-container');
+    // CRITICAL: Ensures all previous input elements are destroyed
+    container.innerHTML = ''; 
+    
+    const variables = THEME_VAR_DEFAULTS[currentEditingTheme];
+    const currentCustomVars = customThemeSettings[currentEditingTheme] || {};
+
+    if (!variables) {
+        console.error(`[Theme Editor ERROR] No variables found for theme: ${currentEditingTheme}`);
+        return;
+    }
+
+    // Use Object.entries for a safer, explicit iteration over the variable keys
+    Object.entries(variables).forEach(([varName, defaultDef]) => { 
+        
+        // This log should appear for every variable successfully processed
+        console.log(`[Theme Editor] Processing: ${varName}`); 
+
+        // Get the value to display: custom value, or default value
+        let currentValue = currentCustomVars[varName] || defaultDef.default;
+        const isColor = defaultDef.type === 'color';
+
+        const group = document.createElement('div');
+        group.className = 'color-group';
+        
+        // Convert varName to a more readable label
+        const labelText = varName.replace(/--/g, '').replace(/-/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+        if (isColor) {
+            // For color inputs, we use a color picker and a text input for HEX
+            group.innerHTML = `
+                <label for="${varName}-${currentEditingTheme}">${labelText} (Color)</label>
+                <div class="color-input-wrapper">
+                    <input type="color" id="picker-${varName}" value="${currentValue}">
+                    <input type="text" id="text-${varName}" value="${currentValue}" data-var="${varName}" maxlength="7">
+                </div>
+            `;
+        } else {
+             // For unit/string inputs, we use only a text input
+             group.innerHTML = `
+                <label for="${varName}-${currentEditingTheme}">${labelText} (Unit)</label>
+                <div class="color-input-wrapper">
+                    <input type="text" id="text-${varName}" value="${currentValue}" data-var="${varName}">
+                </div>
+            `;
+        }
+        
+        const textInput = group.querySelector(`#text-${varName}`);
+        const colorPicker = group.querySelector(`#picker-${varName}`);
+        
+        // Live Update on Input Change - (omitted for brevity, but should be attached here)
+        const updateHandler = (e) => {
+            let value = e.target.value.trim();
+            
+            if (isColor) {
+                const isPicker = e.target.type === 'color';
+                value = (isPicker ? e.target.value : value.toUpperCase());
+                
+                if (isPicker) {
+                    textInput.value = value;
+                } else if (!/^#([0-9A-F]{3}){1,2}$/i.test(value)) {
+                    value = colorPicker ? colorPicker.value : value;
+                } else if (colorPicker) {
+                    colorPicker.value = value;
+                }
+            }
+            document.documentElement.style.setProperty(varName, value || '');
+        };
+
+        if (colorPicker) colorPicker.addEventListener('input', updateHandler);
+        textInput.addEventListener('input', updateHandler);
+
+        container.appendChild(group);
+    }); 
+	
+    console.log(`[Theme Editor] END Rendering inputs for: ${currentEditingTheme} theme.`); // DEBUG LOG
+}
+
+/**
+ * Collects values from the inputs, saves them to localStorage, and applies them permanently.
+ * NOTE: Updated for the new defaults structure.
+ */
+function saveAndApplyChanges() {
+    const container = document.getElementById('color-inputs-container');
+    const inputs = container.querySelectorAll('input[type="text"][data-var]');
+    
+    customThemeSettings[currentEditingTheme] = {};
+    const defaults = THEME_VAR_DEFAULTS[currentEditingTheme];
+    
+    inputs.forEach(input => {
+        const varName = input.getAttribute('data-var');
+        const defaultDef = defaults[varName];
+        if (!defaultDef) return;
+
+        const defaultValue = defaultDef.default;
+        let newValue = input.value.trim();
+
+        // Check if value is different from default (case-insensitive for colors)
+        const isDefault = defaultDef.type === 'color' ? newValue.toUpperCase() === defaultValue.toUpperCase() : newValue === defaultValue;
+        
+        if (newValue && !isDefault) {
+            customThemeSettings[currentEditingTheme][varName] = newValue;
+        }
+    });
+
+    // Save the entire settings object to localStorage
+    localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(customThemeSettings));
+    
+    // Apply the changes to the live CSS. 
+    applyTheme();
+
+    // Reset the data-theme if it was in preview mode
+    if (document.documentElement.getAttribute('data-theme') === 'light-preview') {
+         document.documentElement.setAttribute('data-theme', 'light');
+    }
+
+    alert('Theme changes applied and saved to local storage!');
+    document.getElementById('theme-editor-modal').classList.remove('open');
+}
+
+/**
+ * Resets the currently editing theme to its default values.
+ */
+function resetCurrentTheme() {
+    if (!confirm(`Are you sure you want to reset the ${currentEditingTheme} theme to its default colors? This will clear your custom settings for this theme.`)) {
+        return;
+    }
+
+    // 1. Clear the custom settings for the current theme
+    delete customThemeSettings[currentEditingTheme];
+    
+    // 2. Update localStorage
+    localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(customThemeSettings));
+
+    // 3. Re-apply the overall theme, which will clear the inline styles and custom <style> block
+    applyTheme();
+    
+    // 4. Re-render inputs to show default values
+    renderColorInputs();
+
+    alert(`${currentEditingTheme} theme successfully reset.`);
+}
+
+/**
+ * Event Listeners and Initialization
+ */
+ 
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Load saved theme and apply it immediately on page load
+    loadCustomTheme();
+    applyTheme();
+    
+
+    // 2. Open Modal Handler
+    fab.addEventListener('click', () => {
+        const activeTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        
+        // Set the editor to the current active theme
+        themeSelector.value = activeTheme;
+        currentEditingTheme = activeTheme;
+
+        // Set the document to 'light-preview' if it's currently 'dark' but we're editing 'light'
+        if (currentEditingTheme === 'light' && activeTheme === 'dark') {
+             document.documentElement.setAttribute('data-theme', 'light-preview');
+			 console.log('switched to light');
+        }
+		else if (currentEditingTheme === 'dark' && activeTheme === 'light') {
+             document.documentElement.setAttribute('data-theme', 'dark-preview');
+			 console.log('switched to dark');
+		}
+
+        renderColorInputs();
+        modal.classList.add('open');
+    });
+
+    // 3. Close Modal Handlers
+    function closeModal() {
+        modal.classList.remove('open');
+        
+        // Restore the live theme state by re-applying saved settings (discards unapplied live-previews)
+        applyTheme(); 
+
+        // Clear the light-preview state if needed
+        // If the editor was open, we need to check if the user had the light theme saved
+        const savedTheme = localStorage.getItem('theme') || 'dark'; // Get the user's previously set theme preference
+
+        if (document.documentElement.getAttribute('data-theme') === 'light-preview') {
+            // If we were in preview mode, switch the active theme back to what the user had before opening the editor
+            if (savedTheme === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+            } else {
+                document.documentElement.removeAttribute('data-theme'); // Go back to dark theme
+            }
+        }
+    }
+
+    closeModalBtn.addEventListener('click', closeModal);
+    
+    // Close modal on outside click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+
+    // 5. Apply/Save Button Handler
+    applyBtn.addEventListener('click', saveAndApplyChanges);
+
+    // 6. Reset Button Handler
+    resetBtn.addEventListener('click', resetCurrentTheme);
+});
+
+    // 4. Theme Selector Change Handler
+    // 4. Theme Selector Change Handler (ROBUST VERSION)
+    themeSelector.addEventListener('change', (e) => {
+        const newEditingTheme = e.target.value;
+
+        // Critical: Update the global state variable
+        currentEditingTheme = newEditingTheme;
+        
+        // 1. Handle live preview switch for the entire page
+        if (currentEditingTheme === 'light') {
+            // Set to a temporary preview state to show light theme variables
+            document.documentElement.setAttribute('data-theme', 'light');
+			themeIcon.innerHTML = SUN_ICON_PATH;
+			//applyTheme();
+        } else if (currentEditingTheme === 'dark') {
+            // Remove the data-theme attribute, which reverts the page to the default (dark) theme
+            document.documentElement.removeAttribute('data-theme'); 
+			themeIcon.innerHTML = MOON_ICON_PATH;
+			//applyTheme();
+        }
+        applyTheme();
+        // 2. Re-render inputs to show the correct variable list for the newly selected theme
+        renderColorInputs();
+    });
+
+    // 5. Apply/Save Button Handler
+    applyBtn.addEventListener('click', saveAndApplyChanges);
+
+    // 6. Reset Button Handler
+    resetBtn.addEventListener('click', resetCurrentTheme);
+
+// ... existing variables like fab, modal, themeSelector ...
+
+// Check if your old theme toggle button was named 'theme-toggle-button' or use its actual ID
+
+// --- START: Core Theme Switching Logic ---
+/**
+ * Toggles the 'data-theme' attribute and saves the preference to localStorage.
+ * IMPORTANT: It calls applyTheme() to ensure any custom colors are loaded on the new base theme.
+ */
+// Add the icon element to your list of variables
+const themeToggleButton = document.getElementById('theme-toggle'); 
+const themeIcon = document.getElementById('sun-icon'); // NEW VARIABLE
+
+// Define the SVG paths
+const MOON_ICON_PATH = '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>';
+const SUN_ICON_PATH = '<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>';
+
+/**
+ * Toggles the 'data-theme' attribute and saves the preference to localStorage.
+ * IMPORTANT: It calls applyTheme() to ensure any custom colors are loaded on the new base theme.
+ */
+function switchTheme() {
+    const root = document.documentElement;
+    const currentTheme = root.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+    // 1. Set the new theme
+    if (newTheme === 'light') {
+        root.setAttribute('data-theme', 'light');
+    } else {
+        root.removeAttribute('data-theme'); // Defaults it to dark
+    }
+
+    // 2. Update the icon
+    if (themeIcon) {
+        // If switching to light theme, show the sun icon (inside the SVG)
+        if (newTheme === 'light') {
+            themeIcon.innerHTML = SUN_ICON_PATH;
+        } 
+        // If switching to dark theme, show the moon icon (inside the SVG)
+        else {
+            themeIcon.innerHTML = MOON_ICON_PATH;
+        }
+    }
+
+    // 3. Save the preference
+    localStorage.setItem('theme', newTheme);
+    
+    // 4. Re-apply any custom overrides
+    applyTheme(); 
+}
+
+// 4. Initial Theme Check (on load) - UPDATED TO SET ICON ON LOAD
+const savedThemePreference = localStorage.getItem('theme');
+if (savedThemePreference === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    if (themeIcon) {
+        themeIcon.innerHTML = SUN_ICON_PATH; // Set sun icon if light is default
+    }
+} else {
+     // Ensure moon icon is set if dark is default
+     if (themeIcon) {
+        themeIcon.innerHTML = MOON_ICON_PATH; 
+    }
+}
+
+// 5. Attach the event listener (if the button exists)
+if (themeToggleButton) {
+    themeToggleButton.addEventListener('click', switchTheme);
+}
+// --- END: Core Theme Switching Logic ---
+
+
+
+
+    </script>
+   
+    <div id="notification-container" class="notification-container">
+        <!-- Notifications will be dynamically inserted here -->
+    </div>
+
 </body>
 </html>
