@@ -996,10 +996,12 @@
         const oldHandles = new Set(oldProducts.map(p => p.handle));
         const newlyAdded = newProducts.filter(p => !oldHandles.has(p.handle));
         
-        newlyAdded.forEach(newProduct => {
+        newlyAdded.forEach((newProduct, index) => {
           if (matchesFilters(newProduct)) {
             log(LOG_LEVELS.INFO, `New product detected: ${newProduct.title}`);
             changes.new.push(newProduct);
+			window.showNotification(`Name: ${newProduct.title}\nTiers: ${newProduct.variants[index].option1}\n\nWeight: ${newVariant.correctedWeight}`, 500000, "New Product Available");
+                 
           }
         });
       }
@@ -1017,14 +1019,21 @@
 
             // Check for changes in existing variants
             newVariants.forEach(newVariant => {
-              const oldVariant = oldVariants.find(v => 
-                v.correctedTier === newVariant.correctedTier && 
-                v.correctedWeight === newVariant.correctedWeight
-              );
+				const oldVariant = oldVariants.find(v => {
+					// 1. Check for a match
+					const isMatch = v.id === newVariant.id;
 
+					// 2. Perform the side-effect (show notification) ONLY if it's the match
+					if (!isMatch) {
+						// Warning: This runs the notification inside the search loop
+						//window.showNotification(v.title, 500000, " match");
+					}
+
+					// 3. MUST explicitly return true or false for the search to work
+					return isMatch;
+				});
               if (oldVariant) {
-                if (oldVariant.available !== newVariant.available ||
-                    oldVariant.price !== newVariant.price && newVariant.available) {
+                if (oldVariant.available !== newVariant.available || oldVariant.price !== newVariant.price) {
                   hasChanges = true;
                   changedVariants.push({
                     ...newVariant,
@@ -1039,6 +1048,12 @@
                     oldAvailable: oldVariant.available,
                     newAvailable: newVariant.available
                   });
+				  if(oldVariant.price != newVariant.price && oldVariant.available != newVariant.available)
+				      window.showNotification(`Name: ${newProduct.title}\nPrice: From ${oldVariant.price} to ${newVariant.price}\nAvailable: Was ${oldVariant.available}, is now ${newVariant.available}`, 500000, "Product Changed");
+                  else if(oldVariant.price != newVariant.price)
+					  window.showNotification(`Name: ${newProduct.title}\nPrice: From ${oldVariant.price} to ${newVariant.price}`, 500000, "Product Changed");
+                  else if(oldVariant.available != newVariant.available)
+					  window.showNotification(`Name: ${newProduct.title}\nAvailable: Was ${oldVariant.available}, is now ${newVariant.available}`, 500000, "Product Changed");
                 }
               } else {
                 // New variant added
@@ -1050,6 +1065,8 @@
                   price: newVariant.price,
                   available: newVariant.available
                 });
+				window.showNotification(`Name: ${newProduct.title}\nTier: ${newVariant.correctedTier}\nPrice: ${newVariant.price}\nWeight: ${newVariant.correctedWeight}`, 500000, "New Tier Available");
+                  
               }
             });
 
@@ -1290,7 +1307,7 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
       const intervalMs = currentSettings.checkInterval * 60 * 1000;
 
       console.log(`Starting product update checker - checking every ${currentSettings.checkInterval} minutes`);
-
+	  window.showNotification(`Starting product update checker - checking every ${currentSettings.checkInterval} minutes`, 15000, "Product Update Checker");
       // Start the countdown timer and get cleanup function
       const countdownCleanup = startCountdownTimer(intervalMs);
       
@@ -1311,6 +1328,10 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
             filterProducts();
             updateProductSelectList();
           }
+		  else
+		  {
+			  window.showNotification(`No new products were found`, 60000, "Product Update Checker");
+		  }
         } catch (error) {
           console.error('Error checking for product updates:', error);
         }
@@ -1322,7 +1343,7 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
     // Filter THCA products
     function filterTHCAProducts(products) {
       const thcaProducts = products.filter(product => 
-        product.id
+        product.vendor === "Lost In Translation"
       );
       //console.log(`Filtered ${products.length} total products to ${thcaProducts.length} THCA products`);
       return thcaProducts;
@@ -1577,26 +1598,31 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
           products = await getProducts(true);
 		  getTiers();
 		  getWeights();
+          startProductUpdateChecker();
           if (Array.isArray(products) && products.length > 0) {
             console.log(`Loaded ${products.length} cached THCA products`);
-			window.showNotification(`No new products were found, using cached products instead`, 5000, "Lost in Translation");
-            loadFilterState();
+			loadFilterState();
             await loadStrainData();
             
             // Show products immediately
             
 			//alert("Yeet");
             filterProducts();
+          toggleLoader(false);
             // Then check for updates in the background
             try {
-				const updatedProducts = await getProducts(false);
-              if (JSON.stringify(products) !== JSON.stringify(updatedProducts)) {
+				const freshProducts = await getProducts(false); 
+			  const changes = detectProductChanges(products, freshProducts);
+			  
+			  if (changes.new.length > 0 || changes.stockChanged.length > 0 || changes.removed.length > 0) {
                 console.log('Products updated, refreshing display');
-                products = updatedProducts;
+                products = freshProducts;
                 filterProducts();
-			window.showNotification(`New products were found, refreshing the list`, 5000, "Lost in Translation");
-              }
+				window.showNotification(`New products were found, refreshing the list`, 15000, "Product Update Checker");
+			  }
 			  else{
+				  window.showNotification(`No new products were found, using cached products instead`, 15000, "Product Update Checker");
+            
 			  }
 
 			  
@@ -1614,7 +1640,7 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
             }
             
             console.log(`Loaded ${products.length} fresh THCA products`);
-			window.showNotification(`New products were found, refreshing the list`, 5000, "Lost in Translation");
+			window.showNotification(`Product updates will appear here`, 60000, "Lost in Translation");
 			
             loadFilterState();
             await loadStrainData();
@@ -1623,8 +1649,6 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
           }
 
           // Start the update checker
-          startProductUpdateChecker();
-          toggleLoader(false);
           
           return true; // Success
         } catch (error) {
@@ -1828,6 +1852,8 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
     function openSettingsModal() {
       const modal = document.getElementById('settings-modal');
       modal.style.display = 'flex';
+	  modal.classList.remove("closed");
+	  modal.classList.add("open");
       
       // Load current settings into form
       document.getElementById('check-interval').value = currentSettings.checkInterval;
@@ -1879,7 +1905,10 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
     }
 
     function closeSettingsModal() {
-      document.getElementById('settings-modal').style.display = 'none';
+		
+	  document.getElementById('settings-modal').classList.add("closed");
+	  document.getElementById('settings-modal').classList.remove("open");
+      //document.getElementById('settings-modal').style.display = 'none';
       document.body.classList.remove('modal-open');
     }
 
@@ -2339,6 +2368,7 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
             ...v,
             correctedWeight: weight,
             correctedTier: tier,
+            available: v.available,
             hasPrice: utils.hasValidPrice(v)
           };
         }).filter(v => v.correctedWeight && v.hasPrice);
@@ -2637,13 +2667,15 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
 
     // Cart Modal Functions
     function openCartModal() {
-      document.getElementById('cart-modal').style.display = 'flex';
-      document.body.classList.add('modal-open');
+     // document.getElementById('cart-modal').style.display = 'flex';
+      document.getElementById('cart-modal').classList.add('open');
+      document.getElementById('cart-modal').classList.remove('closed');
     }
 
     function closeCartModal() {
-      document.getElementById('cart-modal').style.display = 'none';
-      document.body.classList.remove('modal-open');
+     // document.getElementById('cart-modal').style.display = 'none';
+      document.getElementById('cart-modal').classList.remove('open');
+      document.getElementById('cart-modal').classList.add('closed');
     }
 
     function checkout() {
@@ -2844,7 +2876,7 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
   <!-- Settings Button -->
   
   <!-- Settings Modal -->
-  <div class="modal-overlay" id="settings-modal">
+  <div class="modal-overlay modal-backdrop closed" id="settings-modal">
     <div class="modal">
       <div class="modal-header">
         <h2 class="modal-title">Notification Settings</h2>
@@ -3021,7 +3053,7 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
 
   <!-- Cart Modal -->
   
-  <div id="cart-modal" class="modal-overlay ">
+  <div id="cart-modal" class="modal-overlay modal-backdrop closed">
     <div class="modal">
     <div class="cart-modal-content">
       <div class="modal-header">
@@ -3399,7 +3431,7 @@ function populateWeightCheckboxes(uniqueWeights) {
             setTimeout(() => {
                 // Add the 'visible' class to trigger the transition from off-screen
                 notificationElement.classList.add('visible');
-            }, 10);
+            }, 100);
             
             // 3. Schedule the automatic removal
             const timeoutID = setTimeout(() => {
