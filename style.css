@@ -43,11 +43,11 @@
 --strain-unknown: #4A5568;              /* Muted gray (using new secondary accent) */
 
 /* Effects & Overlays */
---shadow-color: rgba(0, 0, 0, 0.9);     /* NEW: Near black shadow for maximum lift off the background */
---shadow-normal: 0 12px 40px var(--shadow-color); /* Slightly larger, softer shadow */
+--shadow-color: rgba(87, 98, 117, 0.3);     /* NEW: Near black shadow for maximum lift off the background */
+--shadow-normal: 0 0px 10px var(--shadow-color); /* Slightly larger, softer shadow */
 --shadow-hover: 0 0 20px rgba(56, 189, 248, 0.6); /* NEW: Larger, slightly stronger electric cyan glow */
 --border-glow: rgba(74, 85, 104, 0.4);   /* NEW: Deeper slate blue glow for edges */
---modal-overlay: rgba(0, 0, 0, 0.95);   /* NEW: Almost opaque overlay for true focus */
+--modal-overlay: rgba(0, 0, 0, 0.45);   /* NEW: Almost opaque overlay for true focus */
 
   /* Layout & Motion */
   --radius-lg: 14px;
@@ -125,13 +125,13 @@ body {
   );
   
   /* This is the key fix: it prevents tiling and keeps the gradient fixed to the viewport */
-  background-attachment: fixed; 
+  background-attachment: fixed; /* instead of fixed */
   
   /* Set the initial size larger than the viewport to allow for movement */
   background-size: 300% 300%; 
   
   /* Apply the slow animation */
-  animation: gradient-shift 25s ease infinite; 
+   animation: gradient-shift 45s ease-in-out infinite; 
 }
 
 h1 {
@@ -369,8 +369,6 @@ select option {
   background-color: var(--bg-secondary);
   /* Glassmorphism additions */
   border: 1px solid var(--border-glow);
-  backdrop-filter: blur(var(--blur-amount));
-  -webkit-backdrop-filter: blur(var(--blur-amount));
   border-radius: 12px;
   padding: 15px;
   box-shadow: var(--shadow-normal);
@@ -445,8 +443,6 @@ select option {
   border-radius: 8px;
   border: 1px solid var(--border-glow); /* Match main card border */
   box-shadow: 0 4px 10px var(--shadow-color);
-  backdrop-filter: blur(var(--blur-amount));
-  -webkit-backdrop-filter: blur(var(--blur-amount));
 }
 
 .variant-section {
@@ -482,6 +478,7 @@ select option {
   display: flex;
   flex-direction: column;
   gap: 8px;
+    
 }
 
 .weight-row {
@@ -575,8 +572,6 @@ select option {
   font-weight: 600;
   text-transform: uppercase;
   z-index: 2;
-  backdrop-filter: blur(var(--blur-amount));
-  -webkit-backdrop-filter: blur(var(--blur-amount));
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
@@ -602,8 +597,6 @@ select option {
   border-radius: 50%;
   border: 1px solid var(--border-glow);
   background: var(--bg-secondary);
-  backdrop-filter: blur(var(--blur-amount));
-  -webkit-backdrop-filter: blur(var(--blur-amount));
   box-shadow: var(--shadow-normal);
   display: flex;
   align-items: center;
@@ -688,14 +681,13 @@ select option {
   position: fixed;
   top: 0;
   left: 0;
+  margin: auto 0;
   width: 100%;
   height: 100%;
   background-color: var(--modal-overlay);
   z-index: 1001;
   align-items: flex-start;
   justify-content: center;
-  overflow-y: auto;
-  padding: 20px 0;
 }
 body.modal-open {
   overflow: hidden;
@@ -710,8 +702,9 @@ body.modal-open {
   padding: 20px;
   width: 90%;
   max-width: 640px;
+  overflow-y: auto;
   box-shadow: var(--shadow-normal);
-  margin: 20px auto;
+  margin: auto;
 }
 
 .modal-header {
@@ -939,8 +932,6 @@ body.modal-open {
   margin:5px;
   /* Applying glassmorphism styles */
   background: var(--bg-elevated);
-  backdrop-filter: blur(calc(var(--blur-amount) / 2));
-  -webkit-backdrop-filter: blur(calc(var(--blur-amount) / 2));
   border: 1px solid var(--border-glow);
   box-shadow: var(--shadow-normal);
   color: var(--text-primary);
@@ -1017,7 +1008,6 @@ body.modal-open {
    ------------------------------------- */
 
 #cart-modal.modal-overlay {
-  display: none;
   position: fixed;
   top: 0;
   left: 0;
@@ -1047,8 +1037,6 @@ body.modal-open {
   
   /* Glassmorphism Styles */
   background: var(--bg-elevated);
-  backdrop-filter: blur(var(--blur-amount));
-  -webkit-backdrop-filter: blur(var(--blur-amount));
   border-left: 1px solid var(--border-glow); /* Only left border for side drawer */
   box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5); /* Shadow for depth */
   
@@ -1122,8 +1110,6 @@ body.modal-open {
   flex-shrink: 0; /* Prevent from shrinking */
   /* Re-apply glass effect to keep it fixed to the bottom and slightly distinct */
   background: var(--bg-elevated);
-  backdrop-filter: blur(calc(var(--blur-amount) * 0.5));
-  -webkit-backdrop-filter: blur(calc(var(--blur-amount) * 0.5));
 }
 
 .cart-summary {
@@ -1220,8 +1206,6 @@ body.modal-open {
     
     /* Core Glassmorphism styling consistent with filters-container */
     background: var(--bg-secondary);
-    backdrop-filter: blur(var(--blur-amount));
-    -webkit-backdrop-filter: blur(var(--blur-amount));
     border: 1px solid var(--border-glow);
     box-shadow: var(--shadow-normal);
     
@@ -1326,8 +1310,6 @@ body.modal-open {
     
     /* Core Glassmorphism styling consistent with filters-container */
     background: var(--bg-secondary);
-    backdrop-filter: blur(var(--blur-amount));
-    -webkit-backdrop-filter: blur(var(--blur-amount));
     border: 1px solid var(--border-glow);
     box-shadow: var(--shadow-normal);
     
@@ -1719,8 +1701,6 @@ html[data-theme='light'] .header-link svg {
   }
   .site-status.info {
     background-color: hsl(from var(--accent-primary) h s l / 0.25);
-    backdrop-filter: blur(var(--blur-amount));
-    -webkit-backdrop-filter: blur(var(--blur-amount));
     color: var(--text-primary);
     border-top: 1px solid var(--border-glow);
     box-shadow: 0 0 25px var(--shadow-color);
@@ -1738,16 +1718,22 @@ html[data-theme='light'] .header-link svg {
 
         /* NOTIFICATION CONTAINER */
         .notification-container {
-            position: fixed;
-            bottom: 1px; /* 16px */
-            left: 50px;  /* 16px */
+			z-index: 3055455;
+            position: sticky;
+            bottom: -30px; /* 16px */
+            left: 20px;  /* 16px */
             z-index: 50;
             display: flex;
             flex-direction: column-reverse;
             gap: 0.75rem; /* 12px vertical spacing */
+			width: clamp(240px, 420px, 100% - 40px - 20px);
             pointer-events: none; /* Allow clicks to pass through empty space */
         }
-
+@media (max-width: 1250px) {
+  .notification-container {
+			width:calc(100% - 40px - 20px);
+        }
+}
         /* NOTIFICATION ITEM BASE */
         .notification-item {
             background-color: var(--bg-elevated); /* Transparent dark background for glass effect */
@@ -1759,8 +1745,6 @@ html[data-theme='light'] .header-link svg {
             font-size: 0.875rem; /* 14px font size */
             border-left: 4px solid var(--accent-primary); /* Electric Cyan accent border */
             border: 1px solid var(--border-glow); /* Subtle border */
-            min-width: 280px;
-            max-width: 320px;
             position: relative;
             pointer-events: auto; /* Re-enable clicks on the notification itself */
 
@@ -1831,8 +1815,6 @@ html[data-theme='light-preview'] {
     cursor: pointer;
     transition: all var(--transition-medium);
     /* Glass effect */
-    backdrop-filter: blur(var(--blur-amount));
-    -webkit-backdrop-filter: blur(var(--blur-amount));
 }
 
 .fab:hover {
