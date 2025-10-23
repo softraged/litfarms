@@ -1305,7 +1305,7 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
           if (changes.new.length > 0 || changes.stockChanged.length > 0 || changes.removed.length > 0) {
             console.log('Changes detected, updating state and sending notifications...');
             await handleNotifications(changes);
-			window.showNotification(`${changes.new.length} total changes, ${changes.stockChanged.length} stock changed, ${changes.removed.length} stock removed`, 60000);
+			window.showNotification(`${changes.new.length} total changes, ${changes.stockChanged.length} stock changed, ${changes.removed.length} stock removed`, 60000, "Store Update!");
             products = freshProducts;
             lastProducts = freshProducts;
             filterProducts();
@@ -1579,6 +1579,7 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
 		  getWeights();
           if (Array.isArray(products) && products.length > 0) {
             console.log(`Loaded ${products.length} cached THCA products`);
+			window.showNotification(`No new products were found, using cached products instead`, 5000, "Lost in Translation");
             loadFilterState();
             await loadStrainData();
             
@@ -1593,19 +1594,10 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
                 console.log('Products updated, refreshing display');
                 products = updatedProducts;
                 filterProducts();
+			window.showNotification(`New products were found, refreshing the list`, 5000, "Lost in Translation");
               }
-              //const updatedProducts = await getProducts(false);
-			  //const changes = detectProductChanges(products, updatedProducts);
-			  let variantsInStockNum = 0;
-				products.forEach(product => {
-					
-					let variantsInStock = product.variants;
-					
-			variantsInStock = variantsInStock.filter(v => WEIGHTS.includes(utils.isWeight(v.option1) ? v.option1 : utils.isWeight(v.option2) ? v.option2 : null) );
-              variantsInStock = variantsInStock.filter(v => v.available === true);
-					variantsInStockNum += variantsInStock.length;
-				});
-				window.showNotification(`${variantsInStockNum}/${products.length} total products found.`, 5000, "Lost in Translation");
+			  else{
+			  }
 
 			  
             } catch (updateError) {
@@ -1622,6 +1614,8 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
             }
             
             console.log(`Loaded ${products.length} fresh THCA products`);
+			window.showNotification(`New products were found, refreshing the list`, 5000, "Lost in Translation");
+			
             loadFilterState();
             await loadStrainData();
             
@@ -2262,6 +2256,7 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
 			});
 		});
 	});
+	newTiers.sort();
 	newTiers.push("Other");
 	TIERS = newTiers;
 	TIERS.forEach(tier => {
