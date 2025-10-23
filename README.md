@@ -4,7 +4,7 @@
 
 A dynamic, real-time product listing web application for LitFarms THCA products. This application provides a modern, responsive interface for viewing and monitoring product availability with advanced filtering and notification capabilities.
 
-
+View the website [here!](https://softraged.github.io/litfarms/)
 
 ## 2.0 Main Changes and Enhancements
 
