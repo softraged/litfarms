@@ -1362,7 +1362,8 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
     // Filter THCA products
     function filterTHCAProducts(products) {
       const thcaProducts = products.filter(product => 
-        product.vendor === "Lost In Translation"
+        product.vendor === "Lost In Translation" &&
+		product.title.includes("VIP Membership") === false //Membership causes error
       );
       //console.log(`Filtered ${products.length} total products to ${thcaProducts.length} THCA products`);
       return thcaProducts;
@@ -2407,6 +2408,7 @@ function setSelectSizeToFitAll(selectElement) {
 			values.forEach(value => {
 				//console.log(value);
 					const variantIsInStock = product.variants.some(v => v.option1 === value && v.available && option.name != "Style");
+					//  variantIsInStock removes old/misspelled tiers, at the cost of some out of stock products' tier showing as 'Other'
 					if (value != product.title && variantIsInStock && !newTiers.includes(value)) newTiers.push(value);
 			});
 		});
