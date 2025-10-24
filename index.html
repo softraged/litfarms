@@ -2962,23 +2962,27 @@ function setSelectSizeToFitAll(selectElement) {
               if (variant.available) {
                 const addButton = document.createElement('button');
                 addButton.className = 'add-to-cart-button';
-				switch (variant.correctedTier) {
-				  case "Essential":
-					addButton.style.backgroundColor =  "rgba(115, 248, 113, 1)";
-					addButton.style.color =  "#000";
-					break;
-				  case "Preferred":
-					addButton.style.backgroundColor =  "rgba(142, 113, 248, 1)";
-					addButton.style.color =  "#fff";
-					break;
-				  case "Supreme":
-					addButton.style.backgroundColor =  "#FCD34D";
-					addButton.style.color =  "#000";
-					break;
-				  case "Other":
-					addButton.style.backgroundColor =  "rgba(217, 13, 13, 1)";
-					addButton.style.color =  "#000";
-					break;
+				switch (true) {
+					case variant.correctedTier.includes("Essential"):
+						addButton.style.backgroundColor = "rgba(115, 248, 113, 1)";
+						addButton.style.color = "#000";
+						break;
+					case variant.correctedTier.includes("Preferred"):
+						addButton.style.backgroundColor = "rgba(142, 113, 248, 1)";
+						addButton.style.color = "#fff";
+						break;
+					case variant.correctedTier.includes("Supreme"):
+						addButton.style.backgroundColor = "#FCD34D";
+						addButton.style.color = "#000";
+						break;
+					case variant.correctedTier.includes("Other"):
+						addButton.style.backgroundColor = "rgba(217, 13, 13, 1)";
+						addButton.style.color = "#000";
+						break;
+					// Optional: Add a default case if needed
+					// default:
+					//     // Handle other tiers
+					//     break;
 				}
                 addButton.textContent = 'Add to Cart';
                 addButton.onclick = (e) => {
