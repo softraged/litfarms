@@ -654,8 +654,6 @@
       if (product.body_html) {
         const temp = document.createElement('div');
         temp.innerHTML = product.body_html.replace(/\s*style\s*=\s*(["']).*?\1/g, '');
-        temp.innerHTML = temp.innerHTML.replace(`style="text-align: left;"`,'');
-        temp.innerHTML = temp.innerHTML.replace(`style="text-align: left;"`,'');
         // Find any link that contains the text "Click here for product COA"
         const links = temp.getElementsByTagName('a');
         for (const link of links) {
