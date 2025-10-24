@@ -2064,8 +2064,7 @@ function setSelectSizeToFitAll(selectElement) {
 
       // Log the settings being saved
       console.log('Saving settings:', newSettings);
-      console.log(`Current: ${currentSettings.inBrowserNotificationsEnabled} | New: ${newSettings.inBrowserNotificationsEnabled}`);
-	  let tempBrowserNotis = currentSettings.inBrowserNotificationsEnabled;
+      let tempBrowserNotis = currentSettings.inBrowserNotificationsEnabled;
       saveSettings(newSettings);
 	  if(!tempBrowserNotis && currentSettings.inBrowserNotificationsEnabled)
 		   window.showNotification(`Product updates will appear here`, 15000, "Lost in Translation");
@@ -2423,7 +2422,7 @@ function setSelectSizeToFitAll(selectElement) {
 		// 3. Append the new option HTML to the innerHTML of the select element
 		strainFilterElement.innerHTML += newOptionHTML;
 	});
-	console.log("Tiers:", newTiers);
+	//console.log("Tiers:", newTiers);
   }
   function getWeights() {
 	let newTiers = [];
@@ -2457,7 +2456,7 @@ function setSelectSizeToFitAll(selectElement) {
 		// 3. Append the new option HTML to the innerHTML of the select element
 		strainFilterElement.innerHTML += newOptionHTML;
 	});
-	console.log("Weights:", newTiers);
+	//console.log("Weights:", newTiers);
   }
     const utils = {
       isWeight: (value) => value && WEIGHTS.includes(value),
