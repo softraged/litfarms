@@ -137,6 +137,7 @@
       notificationTiers: ['all'],
       notificationWeights: ['all'],
       notifyNew: true,
+      inBrowserNotificationsEnabled: true,
       notifyStock: true,
       notifyRemoved: true,
       specificProducts: [], // Array of product handles
@@ -977,10 +978,8 @@
 
         // Check if any variant matches the tier and weight filters
         return variants.some(variant => {
-          const matchesTier = currentSettings.notificationTiers.includes('all') ||
-                            currentSettings.notificationTiers.includes(variant.correctedTier);
-          const matchesWeight = currentSettings.notificationWeights.includes('all') ||
-                              currentSettings.notificationWeights.includes(variant.correctedWeight);
+          const matchesTier = currentSettings.notificationTiers.includes(variant.correctedTier);
+          const matchesWeight = currentSettings.notificationWeights.includes(variant.correctedWeight);
           return matchesTier && matchesWeight;
         });
       }
@@ -1023,7 +1022,7 @@
 				}
 				tempNewTiers.push(tier);
 			});
-			window.showNotification(`New Product Available!<br>Name: ${newProduct.title}<br>Tiers: ${$tempNewTiers.split(', ')}<br>Weights: ${$tempNewTiers.split(', ')}`, 500000, "");
+			window.showNotification(`Name: ${newProduct.title}<br>Tiers: ${$tempNewTiers.split(', ')}<br>Weights: ${$tempNewTiers.split(', ')}`, 500000, "New Product Available");
                  
           }
         });
@@ -1072,12 +1071,12 @@
                     newAvailable: newVariant.available
                   });
 				  if(oldVariant.price != newVariant.price && oldVariant.available != newVariant.available)
-				      window.showNotification(`Name: ${newProduct.title}<br>Price: From ${oldVariant.price} to ${newVariant.price}\nAvailable: Was ${oldVariant.available}, is now ${newVariant.available}`, 500000, "Product Changed");
+				      window.showNotification(`Name: ${newProduct.title}<br>Tier: ${newVariant.correctedTier}<br>Price: From ${oldVariant.price} to ${newVariant.price}<br>Available: Was ${oldVariant.available}, is now ${newVariant.available}`, 500000, "Product Changed");
                   else if(oldVariant.price != newVariant.price)
-					  window.showNotification(`Name: ${newProduct.title}<br>Price: From ${oldVariant.price} to ${newVariant.price}`, 500000, "Product Changed");
-                  else if(oldVariant.available != newVariant.available)
-					  window.showNotification(`Name: ${newProduct.title}<br>Available: Was ${oldVariant.available}, is now ${newVariant.available}`, 500000, "Product Changed");
-                }
+					  window.showNotification(`Name: ${newProduct.title}<br>Tier: ${newVariant.correctedTier}<br>Price: From ${oldVariant.price} to ${newVariant.price}`, 500000, "Product Changed");
+                  else 
+					  window.showNotification(`Name: ${newProduct.title}<br>Tier: ${newVariant.correctedTier}<br> Available: Was ${oldVariant.available}, is now ${newVariant.available}`, 500000, "Product Changed");
+				}
               } else {
                 // New variant added
                 hasChanges = true;
@@ -1088,7 +1087,7 @@
                   price: newVariant.price,
                   available: newVariant.available
                 });
-				window.showNotification(`Name: ${newProduct.title}\nTier: ${newVariant.correctedTier}\nPrice: ${newVariant.price}\nWeight: ${newVariant.correctedWeight}`, 500000, "New Tier Available");
+				window.showNotification(`Name: ${newProduct.title}<br>Tier: ${newVariant.correctedTier}<br>Price: ${newVariant.price}<br>Weight: ${newVariant.correctedWeight}`, 500000, "New Tier Available");
                   
               }
             });
@@ -1173,10 +1172,8 @@
 
     // Function to check if a variant matches notification settings
     function matchesNotificationFilters(variant) {
-      const matchesTier = currentSettings.notificationTiers.includes('all') ||
-                         currentSettings.notificationTiers.includes(variant.correctedTier);
-      const matchesWeight = currentSettings.notificationWeights.includes('all') ||
-                         currentSettings.notificationWeights.includes(variant.correctedWeight);
+      const matchesTier = currentSettings.notificationTiers.includes(variant.correctedTier);
+      const matchesWeight = currentSettings.notificationWeights.includes(variant.correctedWeight);
       return matchesTier && matchesWeight;
     }
 
@@ -1663,7 +1660,7 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
             }
             
             console.log(`Loaded ${products.length} fresh THCA products`);
-			window.showNotification(`Product updates will appear here`, 60000, "Lost in Translation");
+			window.showNotification(`Loaded ${products.length} fresh products`, 60000, "Product Update Checker");
 			
             loadFilterState();
             await loadStrainData();
@@ -1682,10 +1679,10 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
               // We have cached data, start maintenance checker
               startMaintenanceChecker();
             } else {
-				window.showNotification(`LitFarms website is currently in maintenance mode. Please try again later.`, 60000);
+				window.showNotification(`LitFarms website is currently in maintenance mode. Please try again later.`, 60000, "Error");
             }
           } else {
-			  window.showNotification(`Unable to load products. Please try again later.`, 60000);
+			  window.showNotification(`Unable to load products. Please try again later.`, 60000, "Error");
             statusManager.show('Unable to load products. Please try again later.', 'error');
           }
           
@@ -1870,7 +1867,79 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
       searchInput.value = '';
       filterProducts('');
     }
+function setSelectSizeToFitAll(selectElement) {
+    if (!selectElement || selectElement.options.length === 0) return;
 
+    const options = selectElement.options;
+    const totalOptions = options.length;
+
+    // --- 1. Measure the full vertical space of a single option ---
+    const firstOption = options[0];
+    const optionStyle = getComputedStyle(firstOption);
+
+    // Get option's height (content + padding + border)
+    const optionHeight = firstOption.offsetHeight; 
+    
+    // Explicitly measure the margins (your CSS sets this to 2px top/bottom)
+    const marginTop = parseFloat(optionStyle.marginTop) || 0;
+    const marginBottom = parseFloat(optionStyle.marginBottom) || 0;
+    
+    // Total vertical space one option takes up, including margin above/below
+    const singleRowSpace = optionHeight + marginTop + marginBottom; 
+
+    // --- 2. Calculate the total content height (sum of all option rows) ---
+    // This is the ideal height if the container had zero padding/border
+    const contentHeight = singleRowSpace * totalOptions; 
+
+    // --- 3. Calculate the Container Offset (The space *around* the options) ---
+    
+    // a. Get the space above the first option: 
+    // This is the select box's top padding and border.
+    // We must temporarily set size to 1 to ensure the option is rendered and measurable.
+    selectElement.size = 1; 
+    const offsetTop = firstOption.offsetTop; // Space from select top edge to option top edge
+
+    // b. Get the space below the last option:
+    // This is the remaining height of the select container after content ends.
+    // The total height with size=totalOptions includes the last option's bottom margin.
+    selectElement.size = totalOptions;
+    const selectTotalHeight = selectElement.offsetHeight;
+    
+    // The vertical position where the *content* ends (top edge of first option + total content height)
+    const contentEndPosition = offsetTop + contentHeight;
+    
+    // The space at the bottom is the total container height minus the content end position
+    // We use Math.max(0, ...) to ensure we don't get a negative value due to rounding errors.
+    const offsetBottom = Math.max(0, selectTotalHeight - contentEndPosition);
+    
+    // Total offset is the space above and the space below
+    const totalContainerOffset = offsetTop + offsetBottom;
+    
+    // --- 4. Final Calculation and Application ---
+    
+    // The total height is the sum of the perfect content height and the total offset.
+    let idealHeight = contentHeight + totalContainerOffset;
+    
+    // Apply the exact pixel height to the element
+    selectElement.style.height = (idealHeight + 1) + 'px'; // +1px safety buffer
+    
+    // Keep the size attribute set to the total options for compatibility
+    selectElement.size = totalOptions;
+}
+	  function areAllOptionsSelected(selectElement) {
+
+		  // If the select element doesn't allow multiple selections,
+		  // this function will only return true if the *only* option is selected.
+		  // For single-selects, checking if *any* option is selected is more common.
+		  if (!selectElement.multiple) {
+			return selectElement.selectedIndex !== -1; 
+		  }
+
+		  const allOptions = selectElement.options;
+		  const selectedOptions = selectElement.selectedOptions;
+
+		  return allOptions.length === selectedOptions.length;
+		}
     // Settings Modal Management
     function openSettingsModal() {
       const modal = document.getElementById('settings-modal');
@@ -1882,6 +1951,7 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
       document.getElementById('check-interval').value = currentSettings.checkInterval;
       document.getElementById('ntfy-enabled').checked = currentSettings.ntfyAppEnabled;
       document.getElementById('email-enabled').checked = currentSettings.ntfyEmailEnabled;
+      document.getElementById('browser-noti-enabled').checked = currentSettings.inBrowserNotificationsEnabled;
       document.getElementById('ntfy-topic').value = currentSettings.ntfyTopic;
       document.getElementById('ntfy-server').value = currentSettings.ntfyServer;
       document.getElementById('ntfy-email').value = currentSettings.ntfyEmail;
@@ -1893,6 +1963,27 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
       const tierSelect = document.getElementById('notification-tier');
       const weightSelect = document.getElementById('notification-weight');
 
+
+	  //Populate the 
+	  
+	  tierSelect.innerHTML = '';
+	  TIERS.forEach(tier => {
+		// Output: [ 'Gold For Less', 'Berry Blast', 'Sativa Sour Diesel', 'Chocolate Bar' ]
+		const newOptionHTML = `<option value="${tier}">${tier}</option>`;
+		// 3. Append the new option HTML to the innerHTML of the select element
+		tierSelect.innerHTML += newOptionHTML;
+	  });
+	  tierSelect.setAttribute('size', TIERS.length);
+	  weightSelect.innerHTML = '';
+	  WEIGHTS.forEach(tier => {
+		// Output: [ 'Gold For Less', 'Berry Blast', 'Sativa Sour Diesel', 'Chocolate Bar' ]
+		const newOptionHTML = `<option value="${tier}">${tier}</option>`;
+		// 3. Append the new option HTML to the innerHTML of the select element
+		weightSelect.innerHTML += newOptionHTML;
+	  });
+	  weightSelect.setAttribute('size', WEIGHTS.length);
+	  setSelectSizeToFitAll(weightSelect);
+	  setSelectSizeToFitAll(tierSelect);
       // Clear previous selections
       Array.from(tierSelect.options).forEach(option => option.selected = false);
       Array.from(weightSelect.options).forEach(option => option.selected = false);
@@ -1910,10 +2001,16 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
       
       // If nothing is selected, select 'all' by default
       if (!Array.from(tierSelect.selectedOptions).length) {
-        tierSelect.querySelector('option[value="all"]').selected = true;
+		  for (let i = 0; i < tierSelect.options.length; i++) {
+			  tierSelect.options[i].selected = true;
+			}
+        //tierSelect.querySelector('option[value="all"]').selected = true;
       }
       if (!Array.from(weightSelect.selectedOptions).length) {
-        weightSelect.querySelector('option[value="all"]').selected = true;
+		  	for (let i = 0; i < weightSelect.options.length; i++) {
+			  weightSelect.options[i].selected = true;
+			}
+		//weightSelect.querySelector('option[value="all"]').selected = true;
       }
       
       // Set checkboxes
@@ -1954,7 +2051,8 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
         ntfyEmailEnabled: document.getElementById('email-enabled').checked,
         ntfyTopic: document.getElementById('ntfy-topic').value.trim(),
         ntfyServer: document.getElementById('ntfy-server').value.trim() || DEFAULT_SETTINGS.ntfyServer,
-        ntfyEmail: document.getElementById('ntfy-email').value.trim()
+        ntfyEmail: document.getElementById('ntfy-email').value.trim(),
+        inBrowserNotificationsEnabled: document.getElementById('browser-noti-enabled').checked
       };
 
       // Update Ntfy config
@@ -1966,8 +2064,11 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
 
       // Log the settings being saved
       console.log('Saving settings:', newSettings);
-
+      console.log(`Current: ${currentSettings.inBrowserNotificationsEnabled} | New: ${newSettings.inBrowserNotificationsEnabled}`);
+	  let tempBrowserNotis = currentSettings.inBrowserNotificationsEnabled;
       saveSettings(newSettings);
+	  if(!tempBrowserNotis && currentSettings.inBrowserNotificationsEnabled)
+		   window.showNotification(`Product updates will appear here`, 15000, "Lost in Translation");
       closeSettingsModal();
     }
 
@@ -1975,21 +2076,25 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
     document.addEventListener('DOMContentLoaded', () => {
       const tierSelect = document.getElementById('notification-tier');
       const weightSelect = document.getElementById('notification-weight');
-
       function handleAllOption(selectElement) {
         selectElement.addEventListener('change', (e) => {
-          const allOption = selectElement.querySelector('option[value="all"]');
+          //const allOption = selectElement.querySelector('option[value="all"]');
+		  const allSelected = areAllOptionsSelected(selectElement);
           const otherOptions = Array.from(selectElement.options).filter(opt => opt.value !== 'all');
           
-          if (allOption.selected) {
+          if (allSelected) {
             // If 'all' is selected, deselect other options
             otherOptions.forEach(opt => opt.selected = false);
           } else if (Array.from(selectElement.selectedOptions).length === 0) {
             // If nothing is selected, select 'all'
-            allOption.selected = true;
+			  for (let i = 0; i < selectElement.options.length; i++) {
+				  selectElement.options[i].selected = true;
+				}
+            //allOption.selected = true;
           } else {
             // If other options are selected, deselect 'all'
-            allOption.selected = false;
+			
+            //allOption.selected = false;
           }
         });
       }
@@ -2905,130 +3010,143 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
         <h2 class="modal-title">Notification Settings</h2>
         <button class="close-modal">&times;</button>
       </div>
-      
-      <div class="settings-section">
-        <h3>Update Frequency</h3>
-        <div class="settings-input-group">
-          <input type="number" id="check-interval" class="settings-input" min="1" value="5" placeholder="5">
-          <span class="settings-input-suffix">minutes</span>
-        </div>
-      </div>
+      <div class="modal-content-scrollable">
+		  <div class="settings-section">
+			<h3 style="padding-bottom:10px; border-bottom: 1px solid var(--border-glow);">Update Frequency</h3>
+			<div class="settings-input-group">
+			  <input type="number" id="check-interval" class="settings-input" min="1" value="5" placeholder="5">
+			  <span class="settings-input-suffix">minutes</span>
+			</div>
+		  </div>
 
-      <div class="settings-section">
-        <h3>Notifications</h3>
-        <div style="margin-bottom: 20px;">
-          <div class="settings-checkbox">
-            <input type="checkbox" id="ntfy-enabled">
-            <label for="ntfy-enabled">Enable App Notifications</label>
-          </div>
-          <small style="color: var(--text-muted); display: block; margin-left: 25px;">
-            Receive notifications on your phone via the Ntfy app
-          </small>
-        </div>
+		  <div class="settings-section">
+			<h3 style="padding-bottom:10px; border-bottom: 1px solid var(--border-glow);">Notifications</h3>
+			<div style="margin-bottom: 20px;">
+			  <div class="settings-checkbox">
+				<input type="checkbox" id="ntfy-enabled">
+				<label for="ntfy-enabled">Enable App Notifications</label>
+			  </div>
+			  <small style="color: var(--text-muted); display: block; margin-left: 25px;">
+				Receive notifications on your phone via the Ntfy app
+			  </small>
+			</div>
 
-        <div style="margin-bottom: 20px;">
-          <div class="settings-checkbox">
-            <input type="checkbox" id="email-enabled">
-            <label for="email-enabled">Enable Email Notifications</label>
-          </div>
-          <small style="color: var(--text-muted); display: block; margin-left: 25px;">
-            Receive notifications via email
-          </small>
-        </div>
-        
-        <div style="margin-top: 10px;">
-          <label for="ntfy-topic">Ntfy Topic:</label>
-          <div style="display: flex; gap: 8px; margin-bottom: 4px;">
-            <input type="text" id="ntfy-topic" class="settings-input notification-input" placeholder="Enter your unique topic name" style="flex: 1;">
-            <button onclick="generateRandomTopic()" style="background-color: var(--accent-secondary); color: var(--bg-primary); border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; white-space: nowrap;">
-              Generate Random
-            </button>
-          </div>
-          <small style="color: var(--text-muted); display: block; margin-bottom: 10px;">
-            This is your private notification channel. Required for app notifications. Use the generate button for a unique topic name.
-          </small>
-        </div>
+			<div style="margin-bottom: 20px;">
+			  <div class="settings-checkbox">
+				<input type="checkbox" id="email-enabled">
+				<label for="email-enabled">Enable Email Notifications</label>
+			  </div>
+			  <small style="color: var(--text-muted); display: block; margin-left: 25px;">
+				Receive notifications via email
+			  </small>
+			</div>
+			
+			<div style="margin-bottom: 20px;">
+			  <div class="settings-checkbox">
+				<input type="checkbox" id="browser-noti-enabled">
+				<label for="browser-noti-enabled">Enable In-Browser Notifications</label>
+			  </div>
+			  <small style="color: var(--text-muted); display: block; margin-left: 25px;">
+				Receive notifications via pop-up in bottom left of browser
+			  </small>
+			</div>
+			
+			<div style="margin-top: 10px;">
+			  <label for="ntfy-topic">Ntfy Topic:</label>
+			  <div style="display: flex; gap: 8px; margin-bottom: 4px;">
+				<input type="text" id="ntfy-topic" class="settings-input notification-input" placeholder="Enter your unique topic name" style="flex: 1;">
+				<button onclick="generateRandomTopic()" style="background-color: var(--accent-secondary); color: var(--bg-primary); border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; white-space: nowrap;">
+				  Generate Random
+				</button>
+			  </div>
+			  <small style="color: var(--text-muted); display: block; margin-bottom: 10px;">
+				This is your private notification channel. Required for app notifications. Use the generate button for a unique topic name.
+			  </small>
+			</div>
 
-        <div style="margin-top: 10px;">
-          <label for="ntfy-email">Email Address:</label>
-          <input type="email" id="ntfy-email" class="settings-input notification-input" placeholder="your@email.com">
-          <small style="color: var(--text-muted); display: block; margin-bottom: 10px;">
-            Required for email notifications.
-          </small>
-        </div>
+			<div style="margin-top: 10px;">
+			  <label for="ntfy-email">Email Address:</label>
+			  <input type="email" id="ntfy-email" class="settings-input notification-input" placeholder="your@email.com">
+			  <small style="color: var(--text-muted); display: block; margin-bottom: 10px;">
+				Required for email notifications.
+			  </small>
+			</div>
 
-        <div style="margin-top: 10px;">
-          <label for="ntfy-server">Ntfy Server (optional):</label>
-          <input type="text" id="ntfy-server" class="settings-input notification-input" placeholder="https://ntfy.sh">
-          <small style="color: var(--text-muted); display: block; margin-bottom: 10px;">
-            Leave as default unless you're using a self-hosted server.
-          </small>
-        </div>
+			<div style="margin-top: 10px;">
+			  <label for="ntfy-server">Ntfy Server (optional):</label>
+			  <input type="text" id="ntfy-server" class="settings-input notification-input" placeholder="https://ntfy.sh">
+			  <small style="color: var(--text-muted); display: block; margin-bottom: 10px;">
+				Leave as default unless you're using a self-hosted server.
+			  </small>
+			</div>
 
-        <button id="test-ntfy" onclick="testNtfyNotification()" style="background-color: var(--accent-primary); color: var(--bg-primary); border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-top: 10px;">
-          Test Notifications
-        </button>
+			<button id="test-ntfy" onclick="testNtfyNotification()" style="background-color: var(--accent-primary); color: var(--bg-primary); border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-top: 10px;">
+			  Test Notifications
+			</button>
 
-        <div style="margin-top: 15px; padding: 10px; background: var(--bg-elevated); border-radius: 4px;">
-          <p style="margin: 0 0 10px 0; color: var(--text-secondary);">To receive app notifications:</p>
-          <ol style="margin: 0; padding-left: 20px; color: var(--text-muted);">
-            <li>Download the Ntfy app for <a href="https://apps.apple.com/us/app/ntfy/id1625396347" target="_blank" style="color: var(--accent-primary);">iOS</a> or <a href="https://play.google.com/store/apps/details?id=io.heckel.ntfy" target="_blank" style="color: var(--accent-primary);">Android</a></li>
-            <li>Open the app and tap "Add subscription"</li>
-            <li>Enter your topic name exactly as above</li>
-            <li>Save and wait for notifications!</li>
-          </ol>
-        </div>
-      </div>
+			<div style="margin-top: 15px; padding: 10px; background: var(--bg-elevated); border-radius: 4px;">
+			  <p style="margin: 0 0 10px 0; color: var(--text-secondary);">To receive app notifications:</p>
+			  <ol style="margin: 0; padding-left: 20px; color: var(--text-muted);">
+				<li>Download the Ntfy app for <a href="https://apps.apple.com/us/app/ntfy/id1625396347" target="_blank" style="color: var(--accent-primary);">iOS</a> or <a href="https://play.google.com/store/apps/details?id=io.heckel.ntfy" target="_blank" style="color: var(--accent-primary);">Android</a></li>
+				<li>Open the app and tap "Add subscription"</li>
+				<li>Enter your topic name exactly as above</li>
+				<li>Save and wait for notifications!</li>
+			  </ol>
+			</div>
+		  </div>
 
-      <div class="settings-section">
-        <h3>Product Filters</h3>
-        <label for="notification-tier">Select Tiers (hold Ctrl/Cmd to select multiple):</label>
-        <select id="notification-tier" class="settings-select" multiple size="4">
-          <option value="all">All Tiers</option>
-          <option value="Essential">Essential</option>
-          <option value="Preferred">Preferred</option>
-          <option value="Supreme">Supreme</option>
-        </select>
+		  <div class="settings-section">
+		  
+			<h3 style="padding-bottom:10px; border-bottom: 1px solid var(--border-glow);">Product Filters</h3>
+			<label for="notification-tier">Select Tiers (hold Ctrl/Cmd to select multiple):</label>
+			<br>
+			<select id="notification-tier" class="settings-select" multiple>
+			  <option value="all">All Tiers</option>
+			  <option value="Essential">Essential</option>
+			  <option value="Preferred">Preferred</option>
+			  <option value="Supreme">Supreme</option>
+			</select>
+			<br>
+			<label for="notification-weight">Select Weights (hold Ctrl/Cmd to select multiple):</label>
+			<br>
+			<select id="notification-weight" class="settings-select" multiple>
+			  <option value="all">All Weights</option>
+			  <option value="28g">28g</option>
+			  <option value="3.5g">3.5g</option>
+			</select>
+			<br>
+			<div class="settings-checkbox">
+			  <input type="checkbox" id="notify-new" checked>
+			  <label for="notify-new">Notify for new products</label>
+			</div>
 
-        <label for="notification-weight">Select Weights (hold Ctrl/Cmd to select multiple):</label>
-        <select id="notification-weight" class="settings-select" multiple size="3">
-          <option value="all">All Weights</option>
-          <option value="28g">28g</option>
-          <option value="3.5g">3.5g</option>
-        </select>
+			<div class="settings-checkbox">
+			  <input type="checkbox" id="notify-stock" checked>
+			  <label for="notify-stock">Notify for stock changes</label>
+			</div>
 
-        <div class="settings-checkbox">
-          <input type="checkbox" id="notify-new" checked>
-          <label for="notify-new">Notify for new products</label>
-        </div>
+			<div class="settings-checkbox">
+			  <input type="checkbox" id="notify-removed" checked>
+			  <label for="notify-removed">Notify for removed products</label>
+			</div>
+		  </div>
 
-        <div class="settings-checkbox">
-          <input type="checkbox" id="notify-stock" checked>
-          <label for="notify-stock">Notify for stock changes</label>
-        </div>
-
-        <div class="settings-checkbox">
-          <input type="checkbox" id="notify-removed" checked>
-          <label for="notify-removed">Notify for removed products</label>
-        </div>
-      </div>
-
-      <div class="settings-section">
-        <h3>Specific Products</h3>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <span id="products-selected-count" style="color: var(--text-muted);">0 products selected</span>
-          <button id="deselect-all-products" onclick="deselectAllProducts()" style="background: none; border: none; color: var(--accent-primary); cursor: pointer; font-size: 0.9em;">
-            Deselect All
-          </button>
-        </div>
-        <div class="product-search">
-          <input type="text" id="product-search" placeholder="Search products...">
-        </div>
-        <div class="product-select-container" id="product-select">
-          <!-- Product checkboxes will be dynamically added here -->
-        </div>
-      </div>
-
+		  <div class="settings-section">
+			<h3 style="padding-bottom:10px; border-bottom: 1px solid var(--border-glow);">Specific Products</h3>
+			<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+			  <span id="products-selected-count" style="color: var(--text-muted);">0 products selected</span>
+			  <button id="deselect-all-products" onclick="deselectAllProducts()" style="background: none; border: none; color: var(--accent-primary); cursor: pointer; font-size: 0.9em;">
+				Deselect All
+			  </button>
+			</div>
+			<div class="product-search">
+			  <input type="text" id="product-search" placeholder="Search products...">
+			</div>
+			<div class="product-select-container" id="product-select">
+			  <!-- Product checkboxes will be dynamically added here -->
+			</div>
+		  </div>
+	  </div>
       <button class="save-settings">Save Settings</button>
     </div>
   </div>
@@ -3437,6 +3555,8 @@ function populateWeightCheckboxes(uniqueWeights) {
          * @param {number} [duration=5000] - The duration in milliseconds before it clears.
          */
         window.showNotification = function(message, duration = NOTIFICATION_DURATION, title = "Information") {
+			if(!currentSettings.inBrowserNotificationsEnabled && title != "Error")
+				return;
             notificationCounter++;
             const currentID = notificationCounter;
             const container = document.getElementById('notification-container');

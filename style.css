@@ -152,7 +152,11 @@ h1 {
     background-color: var(--bg-elevated); /* Use less transparent elevated base */
   }
 }
-
+.modal-content-scrollable {
+  max-height: calc(100vh - 120px); /* Adjust 120px based on your modal's header/footer/padding */
+  padding-right:15px;
+  overflow-y: auto;
+}
 /* -------------------------
    3. HEADER & LOGO
    ------------------------- */
@@ -273,9 +277,74 @@ select option {
   background: var(--bg-secondary) !important; /* Use softer background */
   border-color: var(--text-muted) !important; /* Use muted border */
   color: var(--text-primary) !important;
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.1); /* Subtle glow */
   font-weight: 500;
 }
+select option:not(:checked) {
+  background: var(--bg-primary) !important; /* Use softer background */
+  border-color: var(--text-muted) !important; /* Use muted border */
+  color: var(--text-primary) !important;
+  font-weight: 500;
+}
+select[multiple] {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-lg);
+  padding: 8px;
+  width: 100%;
+  /* FIX 1: Removed or set to auto. This allows the height to expand to fit content. */
+  height: auto; 
+  /* FIX 2: Removed scrollbar-width and scrollbar-color, as you don't want scrolling/scrollbar. */
+  font-size: 0.95rem;
+  backdrop-filter: blur(var(--blur-amount));
+  box-shadow: var(--shadow-normal);
+  transition: var(--transition-medium);
+  appearance: none;
+  cursor: pointer;
+  scrollbar-width: none;
+  outline: none;
+}
+
+/* ---------------------------------------------------- */
+/* The styles for option, option:hover, option:checked, */
+/* and select:focus can remain as they are for styling. */
+/* ---------------------------------------------------- */
+
+/* Force consistent colors on all options (fixes the gray unfocused bug) */
+select[multiple] option {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+  border: none;
+  padding: 6px;    /* 6px top + 6px bottom = 12px */
+  margin: 2px 0;   /* 2px top + 2px bottom = 4px */
+  border-radius: 6px;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+/* Hover effect for each option */
+select[multiple] option:hover {
+  background: var(--accent-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Checked (selected) options */
+select[multiple] option:checked {
+  background: linear-gradient(
+    90deg,
+    var(--accent-tertiary),
+    var(--accent-primary)
+  ) !important;
+  color: var(--bg-primary) !important;
+}
+
+/* When the whole select is focused */
+select[multiple]:focus {
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-hover);
+  background: rgba(20, 30, 40, 0.8);
+}
+
+
 
 /* STRAIN FILTER ADJUSTMENTS (Removed Red/Accent) */
 #strain-type-filter.has-selection,
@@ -2035,4 +2104,46 @@ html[data-theme='light-preview'] {
 .secondary-button:hover {
     background-color: var(--accent-secondary);
     color: var(--text-primary);
+}
+/* Glassmorphic Scrollbar — Deeper Dark Theme */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(var(--blur-amount));
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    var(--accent-secondary),
+    var(--accent-tertiary)
+  );
+  border-radius: var(--radius-lg);
+  box-shadow: inset 0 0 4px var(--border-glow);
+  transition: background var(--transition-medium), box-shadow var(--transition-medium);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    var(--accent-tertiary),
+    var(--accent-primary)
+  );
+  box-shadow: var(--shadow-hover);
+}
+
+/* Optional: subtle scrollbar corner for completeness */
+::-webkit-scrollbar-corner {
+  background: var(--bg-secondary);
+}
+
+/* Firefox support */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-secondary) var(--bg-secondary);
 }
