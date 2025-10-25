@@ -902,12 +902,17 @@ body.modal-open {
     justify-content: center;
     padding: 40px;
     gap: 20px;
+	padding: 20px;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
   }
 
   .loader {
-    width: 48px;
-    height: 48px;
-    border: 3px solid var(--bg-elevated);
+    width: 150px;
+    height: 150px;
+    border: 11px solid var(--bg-elevated);
     border-radius: 50%;
     display: inline-block;
     position: relative;
@@ -922,10 +927,10 @@ body.modal-open {
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    width: 40px;
-    height: 40px;
+    width: 150px;
+    height: 150px;
     border-radius: 50%;
-    border: 3px solid transparent;
+    border: 10px solid transparent;
     border-bottom-color: var(--accent-primary);
   }
 
@@ -1644,7 +1649,7 @@ hr {
 
 
 /* Enforce button visibility on mobile */
-@media (max-width: 768px) {
+@media (max-width: 1250px) {
     #filter-toggle-button {
         display: flex; /* Show the button on mobile */
     }
@@ -1707,10 +1712,7 @@ hr {
 svg {
 	display:in-line;
 }
-#filter-toggle-icon {
-	vertical-align:center;
-    transition: transform var(--transition-fast);
-}#filters-content {
+#filters-content {
     /* Set a large max-height for smooth opening */
     max-height: 2000px; 
     overflow: hidden;
@@ -1788,8 +1790,8 @@ html[data-theme='light'] .header-link svg {
         /* NOTIFICATION CONTAINER */
         .notification-container {
 			z-index: 3055455;
-            position: sticky;
-            bottom: -30px; /* 16px */
+            position: absolute;
+            bottom: 0; /* 16px */
             left: 20px;  /* 16px */
             z-index: 50;
             display: flex;
@@ -1800,7 +1802,7 @@ html[data-theme='light'] .header-link svg {
         }
 @media (max-width: 1250px) {
   .notification-container {
-			width:calc(100% - 40px - 20px);
+			width:calc(100% - 120px);
         }
 }
         /* NOTIFICATION ITEM BASE */

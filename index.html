@@ -110,7 +110,7 @@
     <!-- Product cards will be dynamically inserted here -->
   </div>
 
-  <div id="loader" class="loader-container" style="display: none;">
+  <div id="loader" class="loader-container" style="display: none; ">
     <span class="loader"></span>
     <div class="loader-text">Loading products...</div>
   </div>
@@ -1021,7 +1021,7 @@
 				}
 				tempNewTiers.push(tier);
 			});
-			window.showNotification(`Name: ${newProduct.title}<br>Tiers: ${$tempNewTiers.split(', ')}<br>Weights: ${$tempNewTiers.split(', ')}`, 500000, "New Product Available");
+			//window.showNotification(`Name: ${newProduct.title}<br>Tiers: ${$tempNewTiers.split(', ')}<br>Weights: ${$tempNewTiers.split(', ')}`, 500000, "New Product Available");
                  
           }
         });
@@ -1069,12 +1069,14 @@
                     oldAvailable: oldVariant.available,
                     newAvailable: newVariant.available
                   });
+				  /*
 				  if(oldVariant.price != newVariant.price && oldVariant.available != newVariant.available)
 				      window.showNotification(`Name: ${newProduct.title}<br>Tier: ${newVariant.correctedTier}<br>Price: From ${oldVariant.price} to ${newVariant.price}<br>Available: Was ${oldVariant.available}, is now ${newVariant.available}`, 500000, "Product Changed");
                   else if(oldVariant.price != newVariant.price)
 					  window.showNotification(`Name: ${newProduct.title}<br>Tier: ${newVariant.correctedTier}<br>Price: From ${oldVariant.price} to ${newVariant.price}`, 500000, "Product Changed");
                   else 
-					  window.showNotification(`Name: ${newProduct.title}<br>Tier: ${newVariant.correctedTier}<br> Available: Was ${oldVariant.available}, is now ${newVariant.available}`, 500000, "Product Changed");
+					  window.showNotification(`Name: ${newProduct.title}<br>Tier: ${newVariant.correctedTier}<br>Weight: ${newVariant.correctedWeight}<br> Available: Was ${oldVariant.available}, is now ${newVariant.available}`, 500000, "Product Changed");
+				 */
 				}
               } else {
                 // New variant added
@@ -1086,7 +1088,7 @@
                   price: newVariant.price,
                   available: newVariant.available
                 });
-				window.showNotification(`Name: ${newProduct.title}<br>Tier: ${newVariant.correctedTier}<br>Price: ${newVariant.price}<br>Weight: ${newVariant.correctedWeight}`, 500000, "New Tier Available");
+				//window.showNotification(`Name: ${newProduct.title}<br>Tier: ${newVariant.correctedTier}<br>Price: ${newVariant.price}<br>Weight: ${newVariant.correctedWeight}`, 500000, "New Tier Available");
                   
               }
             });
@@ -1229,7 +1231,7 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
 
       // Only send notification if there are filtered changes and notifications are enabled
       if ((filteredChanges.new.length || filteredChanges.stockChanged.length || filteredChanges.removed.length) &&
-          (NTFY_CONFIG.appEnabled || NTFY_CONFIG.emailEnabled)) {
+          (NTFY_CONFIG.appEnabled || NTFY_CONFIG.emailEnabled || currentSettings.inBrowserNotificationsEnabled)) {
         
         let ntfyMessage = '';
         
@@ -1315,18 +1317,43 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
         
         if (ntfyMessage) {
           ntfyMessage += `\n🕒 Updated: ${new Date().toLocaleString()}`;
-          await sendNtfyNotification('LitFarms Update', ntfyMessage);
+		  if(currentSettings.inBrowserNotificationsEnabled)
+		  {
+			  window.showNotification(ntfyMessage.replace("\n","<br>"), 500000, "Product Update");
+		  }
+		  else 
+			await sendNtfyNotification('LitFarms Update', ntfyMessage);
         }
       }
     }
+	async function checkForProductChanges() {
+		const loaderText = document.querySelector('.loader-text');
+		loaderText.innerText = "Comparing product databases...";
+		const freshProducts = await getProducts(false); 
+		const changes = detectProductChanges(products, freshProducts);
 
+		if (changes.new.length > 0 || changes.stockChanged.length > 0 || changes.removed.length > 0) {
+			console.log('Changes detected, updating state and sending notifications...');
+			await handleNotifications(changes);
+			//window.showNotification(`${changes.new.length} total changes, ${changes.stockChanged.length} stock changed, ${changes.removed.length} stock removed`, 60000, "Store Update!");
+			products = freshProducts;
+			lastProducts = freshProducts;
+			filterProducts();
+			updateProductSelectList();
+		}
+		else
+		{
+			window.showNotification(`No products have changed since the last check`, 60000, "Product Update Checker");
+		}
+		loaderText.innerText = "Loading...";
+	}
     // Update the startProductUpdateChecker function
     function startProductUpdateChecker() {
       let lastProducts = products;
       const intervalMs = currentSettings.checkInterval * 60 * 1000;
 
       console.log(`Starting product update checker - checking every ${currentSettings.checkInterval} minutes`);
-	  window.showNotification(`Starting product update checker - checking every ${currentSettings.checkInterval} minutes`, 15000, "Product Update Checker");
+	  //window.showNotification(`Starting product update checker - checking every ${currentSettings.checkInterval} minutes`, 15000, "Product Update Checker");
       // Start the countdown timer and get cleanup function
       const countdownCleanup = startCountdownTimer(intervalMs);
       
@@ -1335,22 +1362,7 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
 
       updateCheckerId = setInterval(async () => {
         try {
-          const freshProducts = await getProducts(false); 
-          const changes = detectProductChanges(lastProducts, freshProducts);
-          
-          if (changes.new.length > 0 || changes.stockChanged.length > 0 || changes.removed.length > 0) {
-            console.log('Changes detected, updating state and sending notifications...');
-            await handleNotifications(changes);
-			window.showNotification(`${changes.new.length} total changes, ${changes.stockChanged.length} stock changed, ${changes.removed.length} stock removed`, 60000, "Store Update!");
-            products = freshProducts;
-            lastProducts = freshProducts;
-            filterProducts();
-            updateProductSelectList();
-          }
-		  else
-		  {
-			  window.showNotification(`No new products were found`, 60000, "Product Update Checker");
-		  }
+          checkForProductChanges();
         } catch (error) {
           console.error('Error checking for product updates:', error);
         }
@@ -1618,40 +1630,26 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
           products = await getProducts(true);
 		  getTiers();
 		  getWeights();
-          startProductUpdateChecker();
           if (Array.isArray(products) && products.length > 0) {
             console.log(`Loaded ${products.length} cached THCA products`);
 			loadFilterState();
             await loadStrainData();
             
             // Show products immediately
+           // toggleLoader(false);
             
 			//alert("Yeet");
             filterProducts();
-          toggleLoader(false);
             // Then check for updates in the background
             try {
-				const freshProducts = await getProducts(false); 
-			  const changes = detectProductChanges(products, freshProducts);
-			  
-			  if (changes.new.length > 0 || changes.stockChanged.length > 0 || changes.removed.length > 0) {
-                console.log('Products updated, refreshing display');
-                products = freshProducts;
-                filterProducts();
-				window.showNotification(`New products were found, refreshing the list`, 15000, "Product Update Checker");
-			  }
-			  else{
-				  window.showNotification(`No new products were found, using cached products instead`, 15000, "Product Update Checker");
-            
-			  }
-
-			  
+				await checkForProductChanges();
             } catch (updateError) {
               console.warn('Background update failed:', updateError);
               if (updateError.message.includes('401')) {
                 startMaintenanceChecker();
               }
             }
+			
           } else {
             // No cached products, load fresh
             products = await getProducts(false);
@@ -1669,7 +1667,8 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
           }
 
           // Start the update checker
-          
+           startProductUpdateChecker();
+          toggleLoader(false);
           return true; // Success
         } catch (error) {
           console.error('Error in initialization:', error);
@@ -3016,7 +3015,7 @@ function setSelectSizeToFitAll(selectElement) {
       </div>
       <div class="modal-content-scrollable">
 		  <div class="settings-section">
-			<h3 style="padding-bottom:10px; border-bottom: 1px solid var(--border-glow);">Update Frequency</h3>
+			<h3>Update Frequency</h3>
 			<div class="settings-input-group">
 			  <input type="number" id="check-interval" class="settings-input" min="1" value="5" placeholder="5">
 			  <span class="settings-input-suffix">minutes</span>
@@ -3401,14 +3400,19 @@ function populateWeightCheckboxes(uniqueWeights) {
             
             // Utility function to check if the screen size matches the mobile breakpoint
             function isMobile() {
-                return window.matchMedia("(max-width: 768px)").matches;
+                return window.matchMedia("(max-width: 1250px)").matches;
             }
 
-            // 1. Initialize state: Close filters by default on mobile
-            if (isMobile()) {
-                //filterContainer.classList.add("filters-closed");
-                //toggleButton.setAttribute('aria-expanded', 'false');
+            // 1. Initialize state: Close filters by default on browser
+            if (!isMobile()) {
+                filterContainer.classList.add("filters-closed");
+                toggleButton.setAttribute('aria-expanded', 'false');
+				toggleButton.innerHTML = toggleButton.innerHTML.replace("Hide Filters", "Show Filters");
             }
+			else
+			{
+				
+			}
 // 2. Click Handler
             toggleButton.addEventListener('click', () => {
                 // Toggles the class that triggers the CSS max-height/opacity animation
@@ -3434,16 +3438,16 @@ function populateWeightCheckboxes(uniqueWeights) {
             // 3. Re-evaluate on window resize (to handle switching between desktop/mobile)
             let checkInitialState = null;
             window.addEventListener('resize', () => {
+				 let isClosed = toggleButton.getAttribute('aria-expanded');
                 clearTimeout(checkInitialState);
                 checkInitialState = setTimeout(() => {
-                    if (isMobile()) {
-                        // Apply closed state if entering mobile view
-                        filterContainer.classList.add('filters-closed');
-                        toggleButton.setAttribute('aria-expanded', 'false');
-                    } else {
+                    if (!isMobile() && isClosed) {
                         // Ensure filters are open on desktop view
-                        filterContainer.classList.remove('filters-closed');
-                        toggleButton.setAttribute('aria-expanded', 'true');
+						header.style.display = "block";
+						filterContainer.classList.remove('filters-closed');
+						toggleButton.setAttribute('aria-expanded', 'true');
+						toggleButton.innerHTML = toggleButton.innerHTML.replace("Show Filters", "Hide Filters");
+                        // Apply closed state if entering mobile view
                     }
                 }, 200); // Debounce for performance
             });
