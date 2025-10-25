@@ -1790,7 +1790,7 @@ html[data-theme='light'] .header-link svg {
         /* NOTIFICATION CONTAINER */
         .notification-container {
 			z-index: 3055455;
-            position: absolute;
+            position: fixed;
             bottom: 0; /* 16px */
             left: 20px;  /* 16px */
             z-index: 50;
