@@ -345,6 +345,9 @@
           }
         }
 
+		// If we get here and immediate is true, cancel
+		if(immediate)
+			return false;
         // If we get here, we need fresh data
         console.log('Fetching fresh product data');
         const freshProducts = await fetchAllProducts();
@@ -1628,10 +1631,11 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
           
           // First try to load cached products immediately
           products = await getProducts(true);
+          if (Array.isArray(products) && products.length > 0) {
+		   
+            console.log(`Loaded ${products.length} cached THCA products`);
 		  getTiers();
 		  getWeights();
-          if (Array.isArray(products) && products.length > 0) {
-            console.log(`Loaded ${products.length} cached THCA products`);
 			loadFilterState();
             await loadStrainData();
             
@@ -1656,6 +1660,8 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
             if (!Array.isArray(products) || products.length === 0) {
               throw new Error('No products loaded');
             }
+		  getTiers();
+		  getWeights();
             
             console.log(`Loaded ${products.length} fresh THCA products`);
 			window.showNotification(`Loaded ${products.length} fresh products`, 60000, "Product Update Checker");
