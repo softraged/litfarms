@@ -107,7 +107,10 @@ html[data-theme='light'] {
     50% { background-position: 100% 100%; }
     100% { background-position: 0% 0%; }
 }
-
+pre {
+	font-family: 'Inter', sans-serif;
+	white-space: pre-line;
+}
 body {
   font-family: 'Inter', sans-serif;
   color: var(--text-primary);
