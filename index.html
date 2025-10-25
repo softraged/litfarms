@@ -1322,7 +1322,7 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
           ntfyMessage += `\n🕒 Updated: ${new Date().toLocaleString()}`;
 		  if(currentSettings.inBrowserNotificationsEnabled)
 		  {
-			  window.showNotification(ntfyMessage.replace("\n","<br>"), 500000, "Product Update");
+			  window.showNotification(ntfyMessage.replace(/\n/g,"<br>"), 500000, "Product Update");
 		  }
 		  else 
 			await sendNtfyNotification('LitFarms Update', ntfyMessage);
