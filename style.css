@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
 /* ====================================================================
   LitFarms Product List - Cleaned & Glassmorphism Refactor
   ====================================================================
@@ -95,7 +97,6 @@ html[data-theme='light'] {
 /* -------------------------
    2. GLOBAL & BASE STYLES
    ------------------------- */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 
 * {
   box-sizing: border-box;
