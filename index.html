@@ -3517,7 +3517,7 @@ function populateWeightCheckboxes(uniqueWeights) {
             // Inner content using inline or basic styles
             el.innerHTML = `
                 <div style="font-weight: 600; color: var(--text-secondary);">${title}</div>
-                <pre style="color: var(--text-muted); margin-top: 0.8rem;">${message}</pre>
+                <pre style="max-height:300px; overflow-x: hidden; overflow-y: auto; white-space: pre; color: var(--text-muted); margin-top: 0.8rem;">${message}</pre>
                 <button onclick="window.cancelNotificationByID(${counter})" 
                         class="notification-close-btn">
                     &times;
