@@ -2153,3 +2153,29 @@ html[data-theme='light-preview'] {
   scrollbar-width: thin;
   scrollbar-color: var(--accent-secondary) var(--bg-secondary);
 }
+/* In style.css, find or create the style block for .product-image */
+.product-card .product-image {
+    /* Existing styles like width, height, object-fit */
+    
+    /* 🔑 REQUIRED: Smoothly transition opacity */
+    transition: opacity 0.2s ease-in-out; 
+}
+/* In style.css, add this block for visual feedback on the interactive row */
+.weight-row.in-stock:hover {
+    /* Changes mouse to a pointer to indicate interactivity */
+    cursor: pointer; 
+    
+    /* Subtle background change/glow to show the element is active */
+    background-color: var(--bg-elevated); 
+    box-shadow: 0 0 5px var(--accent-primary);
+    
+    /* Make the visual change smooth */
+    transition: all 0.2s ease-in-out;
+}
+#strain-type-filter , #sort-filter, #strain-filter { 
+  background-color: var(--bg-secondary) !important; /* Use softer background */
+  border-color: var(--text-muted) !important; /* Use muted border */
+  color: var(--text-primary) !important;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.1); /* Subtle glow */
+  font-weight: 500;
+}

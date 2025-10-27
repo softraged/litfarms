@@ -533,9 +533,55 @@
 
             const productDescription = createProductDescription(product);
             productCard.appendChild(productDescription);
+			
+			// 1. Find all relevant elements on the current product card
+const productImage = productCard.querySelector('.product-image');
 
+// 🔑 REVERTED: Select all in-stock weight rows
+const weightRows = productCard.querySelectorAll('.weight-row.in-stock');
+
+if (productImage) {
+    // Retrieve the primary source (stored on the <img> element)
+    const primarySrc = productImage.dataset.primarySrc; 
+
+    weightRows.forEach(row => {
+        // Retrieve the variant-specific image source (must be stored on the weight-row div)
+        const variantImageSrc = row.dataset.variantImageSrc;
+
+        // Only attach listeners if this row has a specific image to show
+        if (variantImageSrc) {
+            
+            // --- MOUSE ENTER (HOVER OVER) ---
+            row.addEventListener('mouseenter', () => {
+                // Only swap if the image needs to change
+                if (productImage.src !== variantImageSrc) {
+                    // Smooth transition effect (using CSS transition: opacity 0.2s)
+                    productImage.style.opacity = 0; 
+                    setTimeout(() => {
+                        productImage.src = variantImageSrc;
+                        productImage.style.opacity = 1;
+                    }, 150); 
+                }
+            });
+
+            // --- MOUSE LEAVE (HOVER OUT) ---
+            row.addEventListener('mouseleave', () => {
+                // Swap back to the primary image
+                if (primarySrc && productImage.src !== primarySrc) {
+                    productImage.style.opacity = 0; 
+                    setTimeout(() => {
+                        productImage.src = primarySrc;
+                        productImage.style.opacity = 1;
+                    }, 150);
+                }
+            });
+        }
+    });
+}
+			
             productGrid.appendChild(productCard);
           });
+		  
         };
 
         // Render first two rows immediately
@@ -611,8 +657,8 @@
           // Try to find first image that matches a variant
           const variantImage = product.images.find(img => 
             img.variant_ids && 
-            img.variant_ids.some(id => relevantVariantIds.has(id)) &&
-			relevantVariants.some(variant => {/*console.log('log: ' + variant.available);*/ return variant.available;} ) === true
+            img.variant_ids.some(id => relevantVariantIds.has(id))// &&
+			//relevantVariants.some(variant => {/*console.log('log: ' + variant.available);*/ return variant.available;} ) === true
           );
 		  const cleanTitle = product.title
 			.replace(/\s*-?\s*THCA\s+Flower\s*$/i, '')
@@ -633,7 +679,9 @@
       }
 
       // Set the image source
-      image.src = filteredImages[0].src;
+	  const primaryImageSrc = filteredImages[0].src;
+      image.src = primaryImageSrc;
+	  image.dataset.primarySrc = primaryImageSrc;
 
       // Remove tabIndex and keyboard handlers since we're not navigating images
       imageContainer.removeAttribute('tabIndex');
@@ -1244,6 +1292,7 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
             const matchingVariants = utils.processVariants(p).filter(v => matchesNotificationFilters(v));
             ntfyMessage += `🌿 ${p.title}\n`;
             matchingVariants.forEach(v => {
+			  if(!v.available) return;
               ntfyMessage += `   • ${v.correctedTier} ${v.correctedWeight}\n`;
               ntfyMessage += `     💰 $${v.price} ${v.available ? '(In Stock)' : '(Out of Stock)'}\n`;
             });
@@ -1339,10 +1388,12 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
 			console.log('Changes detected, updating state and sending notifications...');
 			await handleNotifications(changes);
 			//window.showNotification(`${changes.new.length} total changes, ${changes.stockChanged.length} stock changed, ${changes.removed.length} stock removed`, 60000, "Store Update!");
+			getTiers();
+			getWeights();
 			products = freshProducts;
 			lastProducts = freshProducts;
-			filterProducts();
 			updateProductSelectList();
+			filterProducts();
 		}
 		else
 		{
@@ -1634,8 +1685,8 @@ Using cached data from: ${new Date(parseInt(localStorage.getItem(CACHE_TIMESTAMP
           if (Array.isArray(products) && products.length > 0) {
 		   
             console.log(`Loaded ${products.length} cached THCA products`);
-		  getTiers();
-		  getWeights();
+		    getTiers();
+		    getWeights();
 			loadFilterState();
             await loadStrainData();
             
@@ -2914,7 +2965,7 @@ function setSelectSizeToFitAll(selectElement) {
           if (filteredVariants.length > 0) {
             const section = document.createElement('div');
             section.className = `variant-section variant-section-${tier.toLowerCase()}`;
-
+			
             const title = document.createElement('div');
             title.className = `variant-title variant-title-${tier.toLowerCase()}`;
             title.textContent = tier;
@@ -2926,7 +2977,16 @@ function setSelectSizeToFitAll(selectElement) {
             filteredVariants.forEach(variant => {
               const row = document.createElement('div');
               row.className = variant.available ? 'weight-row in-stock' : 'weight-row out-of-stock';
-              
+              // 1. Find the image for this specific variant by variant ID
+				const variantImageObject = product.images.find(img => 
+					img.variant_ids && img.variant_ids.includes(variant.id)
+				);
+				
+				// 2. Attach the source to the variant section if found and in stock
+				if (variant.available && variantImageObject) {
+					// 🔑 NEW: Store the variant's specific image URL on the variantSection div
+					row.dataset.variantImageSrc = variantImageObject.src;
+				}
               // Add click handler to stop event propagation
               row.addEventListener('click', (e) => {
                 e.stopPropagation();
