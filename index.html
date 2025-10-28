@@ -538,7 +538,7 @@
 const productImage = productCard.querySelector('.product-image');
 
 // 🔑 REVERTED: Select all in-stock weight rows
-const weightRows = productCard.querySelectorAll('.weight-row.in-stock');
+const weightRows = productCard.querySelectorAll('.weight-row');
 
 if (productImage) {
     // Retrieve the primary source (stored on the <img> element)
@@ -657,8 +657,8 @@ if (productImage) {
           // Try to find first image that matches a variant
           const variantImage = product.images.find(img => 
             img.variant_ids && 
-            img.variant_ids.some(id => relevantVariantIds.has(id)) &&
-			relevantVariants.some(variant => {/*console.log('log: ' + variant.available);*/ return variant.available;} ) === true
+            img.variant_ids.some(id => relevantVariantIds.has(id))// &&
+			//relevantVariants.some(variant => {/*console.log('log: ' + variant.available);*/ return variant.available;} ) === true
           );
 		  const cleanTitle = product.title
 			.replace(/\s*-?\s*THCA\s+Flower\s*$/i, '')
@@ -2983,7 +2983,7 @@ function setSelectSizeToFitAll(selectElement) {
 				);
 				
 				// 2. Attach the source to the variant section if found and in stock
-				if (variant.available && variantImageObject) {
+				if (variantImageObject) {
 					// 🔑 NEW: Store the variant's specific image URL on the variantSection div
 					row.dataset.variantImageSrc = variantImageObject.src;
 				}

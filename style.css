@@ -2161,7 +2161,7 @@ html[data-theme='light-preview'] {
     transition: opacity 0.2s ease-in-out; 
 }
 /* In style.css, add this block for visual feedback on the interactive row */
-.weight-row.in-stock:hover {
+.weight-row:hover {
     /* Changes mouse to a pointer to indicate interactivity */
     cursor: pointer; 
     
