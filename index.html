@@ -657,8 +657,8 @@ if (productImage) {
           // Try to find first image that matches a variant
           const variantImage = product.images.find(img => 
             img.variant_ids && 
-            img.variant_ids.some(id => relevantVariantIds.has(id))// &&
-			//relevantVariants.some(variant => {/*console.log('log: ' + variant.available);*/ return variant.available;} ) === true
+            img.variant_ids.some(id => relevantVariantIds.has(id)) &&
+			relevantVariants.some(variant => {/*console.log('log: ' + variant.available);*/ return variant.available;} ) === true
           );
 		  const cleanTitle = product.title
 			.replace(/\s*-?\s*THCA\s+Flower\s*$/i, '')
@@ -667,10 +667,10 @@ if (productImage) {
 			.replace(/-/g, '')
 			.replace(' ', '\n')
 			.trim();
-		  if(variantImage)
-			filteredImages = [variantImage];
+		  if(variantImage && variantImage.src !== undefined)
+				filteredImages = variantImage.src;
 		  else
-			filteredImages = [{ src: `https://placehold.co/300x300/${window.getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').replace('#','')}/${window.getComputedStyle(document.documentElement).getPropertyValue('--accent-primary').replace('#','')}?text=${encodeURIComponent(cleanTitle)}` }];
+			filteredImages = `https://placehold.co/300x300/${window.getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').replace('#','')}/${window.getComputedStyle(document.documentElement).getPropertyValue('--accent-primary').replace('#','')}?text=${encodeURIComponent(cleanTitle)}`;
 		  //console.log(variantImage[0].src);
           // Use variant image if found, otherwise use first product image
           //filteredImages = [variantImage || product.images[0]];
@@ -679,7 +679,7 @@ if (productImage) {
       }
 
       // Set the image source
-	  const primaryImageSrc = filteredImages[0].src;
+	  const primaryImageSrc = filteredImages;
       image.src = primaryImageSrc;
 	  image.dataset.primarySrc = primaryImageSrc;
 
